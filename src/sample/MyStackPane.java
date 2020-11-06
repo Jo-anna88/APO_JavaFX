@@ -10,11 +10,9 @@ public class MyStackPane extends StackPane {
     private BarChart<String, Number> histogramChannelBlue;
     private BarChart<String, Number> histogramIntensity;
     private Histogram histogram;
-    private Image image;
     private boolean isRGB;
 
     MyStackPane(Image img){
-        image = img;
         histogram = new Histogram(img);
         isRGB = histogram.getFlag();
         if (isRGB) {

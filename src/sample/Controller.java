@@ -46,7 +46,7 @@ public class Controller {
     private static MyImage nimg = null;
     ArrayList<ImageInfo> arraylist = new ArrayList<>();
     //private MyImage img = null;
-    private Tab selectedTab;
+    //private Tab selectedTab;
 
     @FXML
     private BorderPane rootNode;
