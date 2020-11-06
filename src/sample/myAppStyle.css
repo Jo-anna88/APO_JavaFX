@@ -1,0 +1,27 @@
+* {
+    -fx-primary: #3c3c3c;
+    -fx-secondary: #b4b4b4;
+}
+.tab-header-background {
+    -fx-background-color: -fx-primary;
+}
+.menu-bar {
+    -fx-base: -fx-primary;
+    -fx-background-color: -fx-primary;
+}
+.context-menu {
+    -fx-background-color: derive(-fx-primary,20%);
+}
+.chart-plot-background {
+    -fx-background-color: transparent;
+}
+
+.default-color0.chart-bar{-fx-bar-fill: black;}
+.histogramChannelRed .default-color0.chart-bar{-fx-bar-fill: red;}
+.histogramChannelGreen .default-color0.chart-bar{-fx-bar-fill: green;}
+.histogramChannelBlue .default-color0.chart-bar{-fx-bar-fill: blue;}
+
+.button {
+    -fx-background-color: -fx-primary;
+    -fx-text-fill: white;
+}
