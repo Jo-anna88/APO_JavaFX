@@ -41,7 +41,7 @@
                     <Menu mnemonicParsing="false" text="Tools">
                         <items>
                             <MenuItem mnemonicParsing="false" onAction="#showHistogramPanel" text="Histogram" />
-                        <MenuItem mnemonicParsing="false" onAction="#showHistogramStretchingPanel" text="Linear Histogram Stretching" />
+                            <MenuItem mnemonicParsing="false" onAction="#showHistogramStretchingPanel" text="Linear Histogram Stretching" />
                         </items>
                     </Menu>
                     <Menu mnemonicParsing="false" text="Help">

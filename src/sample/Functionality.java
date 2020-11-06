@@ -6,6 +6,9 @@ import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.paint.Color;
 
+import java.util.Arrays;
+import java.util.LongSummaryStatistics;
+
 
 public class Functionality {
     static PixelReader pixelReader;
@@ -50,21 +53,54 @@ public class Functionality {
                 int nr = (r - histo.findMinimumIntensity(histo.getRed())) / (histo.findMaximumIntensity(histo.getRed()) - histo.findMinimumIntensity(histo.getRed())) * 255;
                 int ng = (g - histo.findMinimumIntensity(histo.getGreen())) / (histo.findMaximumIntensity(histo.getGreen()) - histo.findMinimumIntensity(histo.getGreen())) * 255;
                 int nb = (b - histo.findMinimumIntensity(histo.getBlue())) / (histo.findMaximumIntensity(histo.getBlue()) - histo.findMinimumIntensity(histo.getBlue())) * 255;
-                int nargb = (a<<24) | (nr<<16) | (ng<<8) | nb;
+                int nargb = (a << 24) | (nr << 16) | (ng << 8) | nb;
                 if (null != pixelWriter) {
-                    pixelWriter.setArgb(x,y,nargb);
+                    pixelWriter.setArgb(x, y, nargb);
                 }
             }
         }
         return writableImage;
     }
 
-    public static Image invert (Image img) {
+    public static Image invert(Image img) {
         int width = (int) img.getWidth();
         int height = (int) img.getHeight();
         pixelReader = img.getPixelReader();
         writableImage = new WritableImage(width, height);
         pixelWriter = writableImage.getPixelWriter();
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                Color color = pixelReader.getColor(x, y);
+                pixelWriter.setColor(x, y, color.invert());
+            }
+        }
+        return writableImage;
+    }
 
+    public static Image progowanieBinarneZProgiem(Image img, int prog) { //argumentrm musi być greyscale image!
+        Histogram histo = new Histogram(img);
+        int width = (int) img.getWidth();
+        int height = (int) img.getHeight();
+        pixelReader = img.getPixelReader();
+        writableImage = new WritableImage(width, height);
+        pixelWriter = writableImage.getPixelWriter();
+        int nargb;
+        for (int y = 0; y < img.getHeight(); y++) {
+            for (int x = 0; x < img.getWidth(); x++) {
+                int argb = pixelReader.getArgb(x, y);
+                int a = (0xff & (argb >> 24));
+                int r = (0xff & (argb >> 16));
+                int g = (0xff & (argb >> 8));
+                int b = (0xff & argb);
+                int i = (int) (.299 * r + .587 * g + 0.114 * b);
+
+                if (i <= prog) i = 0;
+                else i = 255;
+
+                nargb = (a << 24) | (i << 16) | (i << 8) | i;
+                pixelWriter.setArgb(x, y, nargb);
+            }
+        }
+        return writableImage;
     }
 }

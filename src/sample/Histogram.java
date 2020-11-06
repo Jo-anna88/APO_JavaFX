@@ -21,6 +21,7 @@ public class Histogram {
 //    XYChart.Series seriesBlue;
 
     long max[] = new long[3]; //RGB
+    long intensityMaximum;
     long maximum;
 
     private boolean flag = true; //do sprawdzania czy obraz jest monochromatyczny czy rgb
