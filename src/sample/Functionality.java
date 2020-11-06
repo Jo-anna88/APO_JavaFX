@@ -58,4 +58,13 @@ public class Functionality {
         }
         return writableImage;
     }
+
+    public static Image invert (Image img) {
+        int width = (int) img.getWidth();
+        int height = (int) img.getHeight();
+        pixelReader = img.getPixelReader();
+        writableImage = new WritableImage(width, height);
+        pixelWriter = writableImage.getPixelWriter();
+
+    }
 }
