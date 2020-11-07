@@ -9,5 +9,19 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="com.drewnoakes:metadata-extractor:2.15.0" level="project" />
     <orderEntry type="library" name="com.jfoenix:jfoenix:9.0.10" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://D:/programy/opencv/build/java/opencv-440.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <NATIVE>
+          <root url="file://D:/programy/opencv/build/java/x64" />
+        </NATIVE>
+        <SOURCES>
+          <root url="jar://D:/programy/opencv/build/java/opencv-440.jar!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
   </component>
 </module>

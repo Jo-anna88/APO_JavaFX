@@ -18,7 +18,6 @@ import javafx.scene.control.Tab;
 import javafx.scene.image.*;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -28,17 +27,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 public class Controller {
@@ -51,7 +43,7 @@ public class Controller {
     @FXML
     private TabPane tabPane;
 
-    private static TabPane sTabPane;
+    static TabPane sTabPane;
 
     public Controller() {
         setExtFilters(fileChooser);
@@ -325,6 +317,40 @@ public class Controller {
         Tab tab0 = new Tab(Functionality.getNameWithoutExt(img) + "_invert." + Functionality.getExtension2(img), nImgView); //zdjecie.jpg -> zdjecie_copy.jpg
         tabPane.getTabs().add(tab0);
         tabPane.getSelectionModel().select(tabPane.getTabs().size() - 1); //ustawia focus na nowo otwartym oknie
+    }
+
+    public void showProgowaniePanel1(ActionEvent actionEvent) throws IOException {
+        Image img = returnSelectedImage();
+        histo = new Histogram(img);
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("progowanieBinarne.fxml"));
+        Parent root = loader.load();
+        Stage nstage = new Stage();
+        try { //gdy mamy do czynienia z Image
+            nstage.setTitle("Progowanie - " + Functionality.getImageName(img));
+        } catch (NullPointerException e) { //gdy mamy do czynienia z WritableImage
+            Tab selectedTab = sTabPane.getSelectionModel().getSelectedItem(); //pobiera wybraną zakładkę (tab)
+            nstage.setTitle("Progowanie - " + selectedTab.getText());
+        }
+        nstage.setScene(new Scene(root));
+        nstage.initOwner(rootNode.getScene().getWindow());
+        nstage.show();
+    }
+
+    public void showProgowaniePanel2(ActionEvent actionEvent) throws IOException {
+        Image img = returnSelectedImage();
+        histo = new Histogram(img);
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("progowanieZachowaniePoziomowSzarosci.fxml"));
+        Parent root = loader.load();
+        Stage nstage = new Stage();
+        try { //gdy mamy do czynienia z Image
+            nstage.setTitle("Progowanie - " + Functionality.getImageName(img));
+        } catch (NullPointerException e) { //gdy mamy do czynienia z WritableImage
+            Tab selectedTab = sTabPane.getSelectionModel().getSelectedItem(); //pobiera wybraną zakładkę (tab)
+            nstage.setTitle("Progowanie - " + selectedTab.getText());
+        }
+        nstage.setScene(new Scene(root));
+        nstage.initOwner(rootNode.getScene().getWindow());
+        nstage.show();
     }
 }
 

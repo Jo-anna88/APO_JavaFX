@@ -90,7 +90,7 @@ public class Functionality {
         return writableImage;
     }
 
-    public static Image progowanieZProgiem(Image img, int prog) { //argumentrm musi być greyscale image!
+    public static Image progowanieBinarne(Image img, int prog) { //argumentrm musi być greyscale image!
         Histogram histo = new Histogram(img);
         int width = (int) img.getWidth();
         int height = (int) img.getHeight();
@@ -109,6 +109,32 @@ public class Functionality {
 
                 if (i <= prog) i = 0;
                 else i = 255;
+
+                nargb = (a << 24) | (i << 16) | (i << 8) | i;
+                pixelWriter.setArgb(x, y, nargb);
+            }
+        }
+        return writableImage;
+    }
+
+    public static Image progowanieZachowaniePoziomowSzarosci (Image img, int prog) {
+        Histogram histo = new Histogram(img);
+        int width = (int) img.getWidth();
+        int height = (int) img.getHeight();
+        pixelReader = img.getPixelReader();
+        writableImage = new WritableImage(width, height);
+        pixelWriter = writableImage.getPixelWriter();
+        int nargb;
+        for (int y = 0; y < img.getHeight(); y++) {
+            for (int x = 0; x < img.getWidth(); x++) {
+                int argb = pixelReader.getArgb(x, y);
+                int a = (0xff & (argb >> 24));
+                int r = (0xff & (argb >> 16));
+                int g = (0xff & (argb >> 8));
+                int b = (0xff & argb);
+                int i = (int) (.299 * r + .587 * g + 0.114 * b);
+
+                if (i <= prog) i = 0;
 
                 nargb = (a << 24) | (i << 16) | (i << 8) | i;
                 pixelWriter.setArgb(x, y, nargb);
