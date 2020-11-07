@@ -89,21 +89,13 @@ public class Histogram {
     }
 
 
-    public long[] getBlue() {
-        return blue; //zwraca tablicę LUT dla kanału niebieskiego
-    }
+    public long[] getBlue() { return blue;} //zwraca tablicę LUT dla kanału niebieskiego
 
-    public long[] getGreen() {
-        return green; //zwraca tablicę LUT dla kanału zielonego
-    }
+    public long[] getGreen() { return green;} //zwraca tablicę LUT dla kanału zielonego
 
-    public long[] getRed() {
-        return red; //zwraca tablicę LUT dla kanału czerwonego
-    }
+    public long[] getRed() { return red;} //zwraca tablicę LUT dla kanału czerwonego
 
-    public long[] getIntensity() {
-        return intensity; //zwraca tablicę LUT dla intensywności RGB
-    }
+    public long[] getIntensity() { return intensity;} //zwraca tablicę LUT dla intensywności RGB
 
     public boolean getFlag() {
         return this.flag;
