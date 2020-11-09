@@ -352,6 +352,22 @@ public class Controller {
         nstage.initOwner(rootNode.getScene().getWindow());
         nstage.show();
     }
+
+    public void showRedukcjaPanel(ActionEvent actionEvent) throws IOException {
+        Image img = returnSelectedImage();
+        FXMLLoader loader = new FXMLLoader((getClass().getResource("redukcjaPoziomowSzarosci.fxml")));
+        Parent root = loader.load();
+        Stage nstage = new Stage();
+        try { //gdy mamy do czynienia z Image
+            nstage.setTitle("Redukcja poziomów szarości - " + Functionality.getImageName(img));
+        } catch (NullPointerException e) { //gdy mamy do czynienia z WritableImage
+            Tab selectedTab = sTabPane.getSelectionModel().getSelectedItem(); //pobiera wybraną zakładkę (tab)
+            nstage.setTitle("Redukcja poziomów szarości - " + selectedTab.getText());
+        }
+        nstage.setScene(new Scene(root));
+        nstage.initOwner(rootNode.getScene().getWindow());
+        nstage.show();
+    }
 }
 
 

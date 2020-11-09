@@ -45,6 +45,7 @@
                             <MenuItem mnemonicParsing="false" onAction="#inverse" text="Inverse" />
                             <MenuItem mnemonicParsing="false" onAction="#showProgowaniePanel1" text="ProgowanieBinarne" />
                             <MenuItem mnemonicParsing="false" onAction="#showProgowaniePanel2" text="Progowanie z zachowaniem poziomów szarości" />
+                            <MenuItem mnemonicParsing="false" onAction="#showRedukcjaPanel" text="Redukcja poziomów szarości" />
                         </items>
                     </Menu>
                     <Menu mnemonicParsing="false" text="Help">
