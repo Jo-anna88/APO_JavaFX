@@ -23,6 +23,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -37,6 +38,7 @@ public class Controller {
     final FileChooser fileChooser = new FileChooser();
     static Histogram histo;
     static Histogram stretchHisto;
+    static Histogram equalHisto;
 
     @FXML
     private BorderPane rootNode;
@@ -277,6 +279,28 @@ public class Controller {
         } catch (NullPointerException e) { //gdy mamy do czynienia z WritableImage
             Tab selectedTab = sTabPane.getSelectionModel().getSelectedItem(); //pobiera wybraną zakładkę (tab)
             nstage.setTitle("histogram - " + selectedTab.getText());
+        }
+        nstage.setScene(new Scene(root));
+        nstage.initOwner(rootNode.getScene().getWindow());
+        nstage.show();
+    }
+
+    public void showHistogramEqualizationPanel(ActionEvent actionEvent) throws IOException, URISyntaxException {
+        Image img = returnSelectedImage();
+        histo = new Histogram(img);
+        Image nImg = Functionality.createImageAfterHistogramEqualization(img,histo);
+        equalHisto = new Histogram(nImg);
+        ImageView nImgView = new ImageView(nImg);
+        Tab tab0 = new Tab (Functionality.getNameWithoutExt(img) + "_equalized." + Functionality.getExtension2(img), nImgView);
+        tabPane.getTabs().add(tab0);
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("histogramEqualization.fxml"));
+        Parent root = loader.load();
+        Stage nstage = new Stage();
+        try { //gdy mamy do czynienia z Image
+            nstage.setTitle("Histogram equalization - " + Functionality.getImageName(img));
+        } catch (NullPointerException e) { //gdy mamy do czynienia z WritableImage
+            Tab selectedTab = sTabPane.getSelectionModel().getSelectedItem(); //pobiera wybraną zakładkę (tab)
+            nstage.setTitle("Histogram equalization - " + selectedTab.getText());
         }
         nstage.setScene(new Scene(root));
         nstage.initOwner(rootNode.getScene().getWindow());

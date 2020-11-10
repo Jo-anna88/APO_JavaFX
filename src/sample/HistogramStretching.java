@@ -27,8 +27,12 @@ public class HistogramStretching {
 
     @FXML
     public void initialize() {
-        stackPaneL.getChildren().addAll(histogramChannelRed,histogramChannelGreen,histogramChannelBlue);
-        stackPaneR.getChildren().addAll(histogramChannelRed2,histogramChannelGreen2,histogramChannelBlue2);
+        if(histogram.getFlag()) {
+            stackPaneL.getChildren().addAll(histogramChannelRed, histogramChannelGreen, histogramChannelBlue);
+            stackPaneR.getChildren().addAll(histogramChannelRed2, histogramChannelGreen2, histogramChannelBlue2);
+        }
+        stackPaneL.getChildren().addAll(histogramIntensity);
+        stackPaneR.getChildren().addAll(histogramIntensity2);
     }
     public HistogramStretching() {
         histogram = histo;

@@ -76,6 +76,47 @@ public class Functionality {
         return writableImage;
     }
 
+    public static Image createImageAfterHistogramEqualization (Image img, Histogram histogram) {
+        int width = (int) img.getWidth();
+        int height = (int) img.getHeight();
+        int pixelsSum = width*height; //sumujemy liczbę pikseli, żeby wiedzieć jak je równomiernie poprzydzielać nowym wartościom
+        System.out.println("pixelsSum: "+ pixelsSum);
+        double threshold = pixelsSum/256.0; //próg (liczba pikseli, która ma się znaleźć w każdej z grup (o ile się uda)
+        System.out.println("threshold: " + threshold);
+        //utworzenie histogramu skumulowanego
+        long[] cummulativeHistogram = new long[256];
+        cummulativeHistogram[0] = histogram.getIntensity()[0];
+        for (int i=1; i<(cummulativeHistogram.length); i++) {
+            cummulativeHistogram[i] = histogram.getIntensity()[i] + cummulativeHistogram[i-1];
+        }
+        //utworzenie tablicy przekodowań (np. pikselom o wartości j będziemy przyporządkowywać wartość i)
+        int[] LUT = new int[256];
+        for (int i=0, j=0; i<256; i++) {
+            while((j<256)&&(cummulativeHistogram[j]<=((i+1)*threshold))) { //sprawdza pierwszy warunek (j<256) i gdy j==256 i tu wyjdzie false, to nie sprawdzi cummulativeHistogram[256] (bo tu operator AND) - nie wyjdzie poza granicę tablicy
+                LUT[j]=i;
+                j++;
+            }
+        }
+        //odczyt danych z obrazu i przyporządkowanie im nowych wartości zgodnie z tablicą LUT
+        pixelReader = img.getPixelReader();
+        writableImage = new WritableImage(width, height);
+        pixelWriter = writableImage.getPixelWriter();
+        for (int y = 0; y < img.getHeight(); y++) {
+            for (int x = 0; x < img.getWidth(); x++) {
+                int argb = pixelReader.getArgb(x, y);
+                int a = (0xff & (argb >> 24));
+                int r = (0xff & (argb >> 16));
+                int g = (0xff & (argb >> 8));
+                int b = (0xff & argb);
+                int intensity = (int) (.299 * r + .587 * g + 0.114 * b);
+                intensity = LUT[intensity];
+                int nargb = (a << 24) | (intensity << 16) | (intensity << 8) | intensity;
+                pixelWriter.setArgb(x, y, nargb);
+            }
+        }
+                return writableImage;
+    }
+
     public static Image invert(Image img) {
         int width = (int) img.getWidth();
         int height = (int) img.getHeight();
