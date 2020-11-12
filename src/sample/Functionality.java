@@ -12,6 +12,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LongSummaryStatistics;
 
@@ -76,13 +77,55 @@ public class Functionality {
         return writableImage;
     }
 
+    public static Image createImageAfterHistogramEqualizationAPO (Image img, Histogram histogram) {
+        int width = (int) img.getWidth();
+        int height = (int) img.getHeight();
+        int pixelsSum = width*height;
+        //utworzenie dystrybuanty
+        double[] dystrybuanta = new double[256];
+        long cummulativeValue = histogram.getIntensity()[0];
+        for (int i=0; i<dystrybuanta.length; i++) {
+            dystrybuanta[i]= cummulativeValue/(double)pixelsSum;
+            cummulativeValue += histogram.getIntensity()[i];
+        }
+        //znalezienie pierwszej niezerowej wartości dystrybuanty
+        double min;
+        int i = 0;
+        for (; i<dystrybuanta.length; i++) {
+            if (dystrybuanta[i]>0) break;
+        }
+        min = dystrybuanta[i];
+        //utworzenie tablicy przekodowań
+        int[] LUT = new int[256];
+        for (i=0; i<LUT.length; i++) {
+            LUT[i] = (int)((((dystrybuanta[i])-min)/(1-min))*255);
+        }
+        //odczyt danych z obrazu i przyporządkowanie im nowych wartości zgodnie z tablicą LUT
+        pixelReader = img.getPixelReader();
+        writableImage = new WritableImage(width, height);
+        pixelWriter = writableImage.getPixelWriter();
+        for (int y = 0; y < img.getHeight(); y++) {
+            for (int x = 0; x < img.getWidth(); x++) {
+                int argb = pixelReader.getArgb(x, y);
+                int a = (0xff & (argb >> 24));
+                int r = (0xff & (argb >> 16));
+                int g = (0xff & (argb >> 8));
+                int b = (0xff & argb);
+                int intensity = (int) (.299 * r + .587 * g + 0.114 * b);
+                intensity = LUT[intensity];
+                int nargb = (a << 24) | (intensity << 16) | (intensity << 8) | intensity;
+                pixelWriter.setArgb(x, y, nargb);
+            }
+        }
+        return writableImage;
+    }
+
+    //http://spatial-analyst.net/ILWIS/htm/ilwisapp/stretch_algorithm.htm
     public static Image createImageAfterHistogramEqualization (Image img, Histogram histogram) {
         int width = (int) img.getWidth();
         int height = (int) img.getHeight();
         int pixelsSum = width*height; //sumujemy liczbę pikseli, żeby wiedzieć jak je równomiernie poprzydzielać nowym wartościom
-        System.out.println("pixelsSum: "+ pixelsSum);
         double threshold = pixelsSum/256.0; //próg (liczba pikseli, która ma się znaleźć w każdej z grup (o ile się uda)
-        System.out.println("threshold: " + threshold);
         //utworzenie histogramu skumulowanego
         long[] cummulativeHistogram = new long[256];
         cummulativeHistogram[0] = histogram.getIntensity()[0];
@@ -115,6 +158,116 @@ public class Functionality {
             }
         }
                 return writableImage;
+    }
+
+    public static Image createImageAfterSelectedHistogramEqualization(Image img, Histogram histogram) {
+//• BBHE - Bi-Histogram Equalization
+//• DSIHE - Dualistic Sub-Image Histogram Equalization
+// polegają na dekompozycji obrazu wejściowego na dwa podobrazy (wg pewnego kryterium) i wykonania operacji
+//  HE dla tych podobrazów
+// W metodzie BBHE za kryterium podziału przyjmuje się średnią jasność w obrazie,
+// a w DSIHE obraz dzieli się na dwa podobrazy o takiej samej ilości pikseli (jaśniejszych i ciemniejszych).
+        //tu przyjęto met.DSIHE
+        int width = (int) img.getWidth();
+        int height = (int) img.getHeight();
+        //utworzenie histogramu skumulowanego
+        long[] cummulativeHistogram = new long[256];
+        cummulativeHistogram[0] = histogram.getIntensity()[0];
+        for (int i=1; i<(cummulativeHistogram.length); i++) {
+            cummulativeHistogram[i] = histogram.getIntensity()[i] + cummulativeHistogram[i-1];
+        }
+        //wyliczenie wartości progu
+        int halfPixelsSum = width*height/2;
+        int threshold=0; //0 oznacza tu poziom jasności, którym inicjujemy zmienną 'threshold'
+        long min = Math.abs(cummulativeHistogram[0]-halfPixelsSum); //poszukujemy min.różnicy pomiędzy wartością hist.skum. a poł.pikseli obrazu
+        for (int i=1; i<cummulativeHistogram.length; i++) {
+            if ((Math.abs(cummulativeHistogram[i] - halfPixelsSum)) < min) {
+                threshold = i;
+                min = Math.abs(cummulativeHistogram[i]-halfPixelsSum);
+            }
+        }
+        //podział histogramu (intensywność poziomu jasności) na 2 histogramy ('ciemniejszy'-left i 'jasniejszy'-right)
+        long[] histoLeftSide = new long[threshold+1];
+        long[] histoRightSide = new long[255-threshold];
+        int i=0;
+        while (i <= threshold) {
+            histoLeftSide[i] = histogram.getIntensity()[i];
+            i++;
+        }
+        i = 0;
+        while (i < histoRightSide.length) {
+            histoRightSide[i] = histogram.getIntensity()[threshold + 1 + i];
+            i++;
+        }
+        //////////////////////////////wykonanie equalizacji (HE) dla tych dwóch histogramów/////////////////////////////
+        //1. zliczenie liczby pikseli w każdym z histogramów
+        //   wynika ona z histogramu skumulowanego -> piksele do thresholdu (włącznie) tworzą pierwszy 'podobraz'
+        long sumLeft = cummulativeHistogram[threshold];
+        long sumRight = width*height - sumLeft;
+        //2. uwtorzenie dystrybuant
+        double[] dystrybuantaLeft = new double[threshold+1]; //==new double [histoLeftSide.length()]
+        double[] dystrybuantaRight = new double[255-threshold]; //==new double [histoRightSide.length()]
+        for (i=0; i<dystrybuantaLeft.length; i++) {
+            dystrybuantaLeft[i]= cummulativeHistogram[i]/(double)sumLeft;
+        }
+        for (i=0; i<dystrybuantaRight.length; i++) {
+            dystrybuantaRight[i]= (cummulativeHistogram[threshold+1+i]-sumLeft)/(double)sumRight;
+        }
+        //3. znalezienie pierwszych niezerowych wartości dystrybuanty
+        double minLeft;
+        double minRight;
+        i=0;
+        for (; i<dystrybuantaLeft.length; i++) {
+            if (dystrybuantaLeft[i]>0) break;
+        }
+        minLeft = dystrybuantaLeft[i];
+        i=0;
+        for (; i<dystrybuantaRight.length; i++) {
+            if (dystrybuantaRight[i]>0) break;
+        }
+        minRight = dystrybuantaRight[i];
+        //4. utworzenie tablicy przekodowań
+        int[] LUTLeft = new int[threshold+1];
+        int[] LUTRight = new int[255-threshold];
+        for (i=0; i<LUTLeft.length; i++) {
+            LUTLeft[i] = (int)((((dystrybuantaLeft[i])-minLeft)/(1-minLeft))*threshold); //{0,threshold}
+        }
+        for (i=0; i<LUTRight.length; i++) {
+            LUTRight[i] = ((int)((((dystrybuantaRight[i])-minRight)/(1-minRight))*(255-threshold-1))+threshold+1); //{threshold+1, 255}
+        }
+        int[] LUT = new int[256];
+        i=0;
+        while (i < LUTLeft.length) {
+            LUT[i] = LUTLeft[i]; //ost.while to LUT[threshold]
+            i++; //ost.'i' to threshold+1
+        }
+        while (i< LUT.length) {
+            LUT[i]=LUTRight[i-threshold-1];
+            i++;
+        }
+        //5. odczyt danych z obrazu i przypisanie nowych wartości na podstawie tablicy LUT
+        pixelReader = img.getPixelReader();
+        writableImage = new WritableImage(width, height);
+        pixelWriter = writableImage.getPixelWriter();
+        for (int y = 0; y < img.getHeight(); y++) {
+            for (int x = 0; x < img.getWidth(); x++) {
+                int argb = pixelReader.getArgb(x, y);
+                int a = (0xff & (argb >> 24));
+                int r = (0xff & (argb >> 16));
+                int g = (0xff & (argb >> 8));
+                int b = (0xff & argb);
+                int intensity = (int) (.299 * r + .587 * g + 0.114 * b);
+                intensity = LUT[intensity];
+                int nargb = (a << 24) | (intensity << 16) | (intensity << 8) | intensity;
+                pixelWriter.setArgb(x, y, nargb);
+            }
+        }
+        return writableImage;
+    }
+
+    public static Image createImageAfterContrastEnhancement (Image img, Histogram histogram) {
+            //rozciąganie histogramu z zakresu {p1,p2} do {q3,q4}
+        return img;
     }
 
     public static Image invert(Image img) {

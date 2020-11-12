@@ -43,6 +43,7 @@
                             <MenuItem mnemonicParsing="false" onAction="#showHistogramPanel" text="Histogram" />
                             <MenuItem mnemonicParsing="false" onAction="#showHistogramStretchingPanel" text="Linear Histogram Stretching" />
                             <MenuItem mnemonicParsing="false" onAction="#showHistogramEqualizationPanel" text="Histogram Equalization" />
+                            <MenuItem mnemonicParsing="false" onAction="#showHistogramSelectedEqualizationPanel" text="DSI Histogram Equalization" />
                             <MenuItem mnemonicParsing="false" onAction="#inverse" text="Inverse" />
                             <MenuItem mnemonicParsing="false" onAction="#showProgowaniePanel1" text="ProgowanieBinarne" />
                             <MenuItem mnemonicParsing="false" onAction="#showProgowaniePanel2" text="Progowanie z zachowaniem poziomów szarości" />

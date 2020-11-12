@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="sample.HistogramEqualizationDISHE"
+            prefHeight="400.0" prefWidth="600.0">
+    <children>
+        <VBox prefHeight="460.0" prefWidth="940.0">
+            <children>
+                <HBox prefHeight="421.0" prefWidth="940.0">
+                    <children>
+                        <StackPane fx:id = "stackPaneL" prefHeight="421.0" prefWidth="470.0" />
+                        <StackPane fx:id = "stackPaneR" prefHeight="421.0" prefWidth="470.0" />
+                    </children>
+                </HBox>
+                <HBox prefHeight="39.0" prefWidth="940.0">
+                    <children>
+                        <Label alignment="CENTER" prefHeight="40.0" prefWidth="470.0" text="Original Histogram" />
+                        <Label alignment="CENTER" prefHeight="40.0" prefWidth="470.0" text="Histogram after equalization (met.DISHE)" />
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </children>
+
+</AnchorPane>
