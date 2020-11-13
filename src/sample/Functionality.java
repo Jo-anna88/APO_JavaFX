@@ -51,7 +51,7 @@ public class Functionality {
         int minG = histo.findMinimumIntensity(histo.getGreen());
         int maxG = histo.findMaximumIntensity(histo.getGreen());
         int minB = histo.findMinimumIntensity(histo.getBlue());
-        int maxB = histo.findMaximumIntensity(histo.getGreen());
+        int maxB = histo.findMaximumIntensity(histo.getBlue());
         int width = (int) img.getWidth();
         int height = (int) img.getHeight();
         pixelReader = img.getPixelReader();
@@ -69,6 +69,73 @@ public class Functionality {
                 int ng = (g-minG)*255/(maxG-minG);
                 int nb = (b-minB)*255/(maxB-minB);
                 int nargb = (a << 24) | (nr << 16) | (ng << 8) | nb;
+                if (null != pixelWriter) {
+                    pixelWriter.setArgb(x, y, nargb);
+                }
+            }
+        }
+        return writableImage;
+    }
+
+    public static Image createImageAfterLinearHistogramStretchingWithRange(Image img, int p1, int p2, int q1, int q2) {
+        //rozciąganie histogramu z zakresu {p1,p2} do {q3,q4}
+        //założenie: q=(p-fmin)/(fmax-fmin)*Lmax+offset
+        // {0,(p1-1)} --> {0, q1-1}     gdy p<p1
+        // {p1, p2}   --> {q1, q2}      gdy p1<=p<=p2
+        // {p2+1, 255}--> {q2+1, 255}   gdy p>p2
+        int width = (int) img.getWidth();
+        int height = (int) img.getHeight();
+        pixelReader = img.getPixelReader();
+        writableImage = new WritableImage(width, height);
+        pixelWriter = writableImage.getPixelWriter();
+        for (int y = 0; y < img.getHeight(); y++) {
+            for (int x = 0; x < img.getWidth(); x++) {
+                int argb = pixelReader.getArgb(x, y);
+                int a = (0xff & (argb >> 24));
+                int r = (0xff & (argb >> 16));
+                int g = (0xff & (argb >> 8));
+                int b = (0xff & argb);
+                int intensity = (int) (.299 * r + .587 * g + 0.114 * b);
+
+                int fmin, fmax, Lmax, offset, newIntensity;
+                if (intensity<p1) {
+//                    if (q1==0 || q1==1) {
+//                        newIntensity=0;
+//                    }
+//                    else if (p1==q1) {
+//                        newIntensity=intensity;
+//                    }
+//                    else {
+                        fmin = 0;
+                        fmax = p1 - 1;
+                        Lmax = q1 - 1;
+                        offset = 0;
+//                      newIntensity = (int) ((intensity - fmin)/(double)(fmax-fmin) *Lmax + offset);
+//                    }
+                }
+                else if (intensity>p2) {
+//                    if (q2==255 || q2==255-1) {
+//                        newIntensity=255;
+//                    }
+//                    else if (p2==q2) {
+//                        newIntensity=intensity;
+//                    }
+//                    else {
+                        fmin = p2 + 1;
+                        fmax = 255;
+                        Lmax = 255 - (q2 + 1);
+                        offset = q2 + 1;
+//                    }
+                }
+                else {
+                    fmin=p1;
+                    fmax=p2;
+                    Lmax=q2-q1;
+                    offset=q1;
+//                  newIntensity = (int) ((intensity - fmin)/(double)(fmax-fmin) *Lmax + offset);
+                }
+                newIntensity = (int) ((intensity - fmin)/(double)(fmax-fmin) *Lmax + offset);
+                int nargb = (a << 24) | (newIntensity << 16) | (newIntensity << 8) | newIntensity;
                 if (null != pixelWriter) {
                     pixelWriter.setArgb(x, y, nargb);
                 }
@@ -265,11 +332,6 @@ public class Functionality {
         return writableImage;
     }
 
-    public static Image createImageAfterContrastEnhancement (Image img, Histogram histogram) {
-            //rozciąganie histogramu z zakresu {p1,p2} do {q3,q4}
-        return img;
-    }
-
     public static Image invert(Image img) {
         int width = (int) img.getWidth();
         int height = (int) img.getHeight();
@@ -285,7 +347,7 @@ public class Functionality {
         return writableImage;
     }
 
-    public static Image progowanieBinarne(Image img, int prog) { //argumentrm musi być greyscale image!
+    public static Image progowanieBinarne(Image img, int prog) { //argumentem musi być grayscale image!
         Histogram histo = new Histogram(img);
         int width = (int) img.getWidth();
         int height = (int) img.getHeight();

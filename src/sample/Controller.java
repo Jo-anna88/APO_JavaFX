@@ -357,10 +357,29 @@ public class Controller {
     }
 
     @FXML
+    public void showHistogramStretchingWithRangePanel(ActionEvent actionEvent) throws IOException, URISyntaxException {
+        Image img = returnSelectedImage();
+        histo = new Histogram(img);
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("histogramStretchingWithRange.fxml"));
+        Parent root = loader.load();
+        Stage nstage = new Stage();
+        try { //gdy mamy do czynienia z Image
+            nstage.setTitle("Rozciąganie histogramu dla zadanego zakresu - " + Functionality.getImageName(img));
+        } catch (NullPointerException e) { //gdy mamy do czynienia z WritableImage
+            Tab selectedTab = sTabPane.getSelectionModel().getSelectedItem(); //pobiera wybraną zakładkę (tab)
+            nstage.setTitle("Rozciąganie histogramu dla zadanego zakresu - " + selectedTab.getText());
+        }
+        nstage.setScene(new Scene(root));
+        nstage.initOwner(rootNode.getScene().getWindow());
+        nstage.show();
+    }
+
+    @FXML
     public void initialize() {
         sTabPane = tabPane;
     }
 
+    @FXML
     public void inverse(ActionEvent actionEvent) throws MalformedURLException, URISyntaxException {
         Image img = returnSelectedImage();
         Image nImg = Functionality.invert(img);
