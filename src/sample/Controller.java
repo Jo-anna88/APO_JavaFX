@@ -23,7 +23,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -37,7 +36,7 @@ import java.util.logging.Logger;
 public class Controller {
     final FileChooser fileChooser = new FileChooser();
     static Histogram histo;
-    static Histogram stretchHisto;
+    //static Histogram stretchHisto;
     static Histogram equalHisto;
     static Histogram DISEqualHisto;
 
@@ -61,7 +60,7 @@ public class Controller {
         }
     }
 
-    private void setExtFilters(FileChooser chooser) {
+    void setExtFilters(FileChooser chooser) {
         chooser.getExtensionFilters().addAll(
                 // new FileChooser.ExtensionFilter("All Images", "*.*"),
                 new FileChooser.ExtensionFilter("PNG", "*.png"),
@@ -96,6 +95,7 @@ public class Controller {
         ImageView imgView = new ImageView(img);
         imgView.setRotate(rotate);
         Tab tab0 = new Tab(Functionality.getImageName(img), imgView);
+        //tab0.setUserData(file);
 
         tabPane.getTabs().add(tab0); //wstawia nowe zdjęcie na końcu tabPane (na pocz.: add(0,tab0)
         tabPane.getSelectionModel().select(tabPane.getTabs().size() - 1); //ustawia focus na nowo otwartym oknie
@@ -210,11 +210,11 @@ public class Controller {
     void saveFileAs2(ActionEvent event) throws IOException {
         final BufferedImage bufferedImage = SwingFXUtils.fromFXImage(((ImageView) tabPane.getSelectionModel().getSelectedItem().getContent()).getImage(), null); //pobiera writableImage
         File file = fileChooser.showSaveDialog(rootNode.getScene().getWindow());
-        ImageIO.write(bufferedImage, tabPane.getSelectionModel().getSelectedItem().getText(), file);
+        ImageIO.write(bufferedImage, "png", file);
     }
 
     @FXML
-    void saveFileAs(ActionEvent event) throws URISyntaxException { //zapisuje obraz pod nową nazwą (nie potrafi zapisać WritableImage)
+    void saveFileAs(ActionEvent event) throws URISyntaxException {
 
         Image img = returnSelectedImage(); //to może być WritableImage lub Image
         String ext2;
@@ -252,15 +252,8 @@ public class Controller {
 
     }
 
-    ///https://www.baeldung.com/java-file-extension///
-//    public Optional<String> getExtension(File file) {
-//        String filename = file.getName();
-//        return Optional.ofNullable(filename)
-//                .filter(f -> f.contains("."))
-//                .map(f -> f.substring(filename.lastIndexOf(".") + 1));
-//    }
 
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     @FXML
     void showHistogramPanel(ActionEvent event) throws IOException { //liczy histogram dla obrazu i wyświetla histogramPanel
         Image img = returnSelectedImage();
@@ -287,61 +280,14 @@ public class Controller {
     }
 
     @FXML
-    public void showHistogramEqualizationPanel(ActionEvent actionEvent) throws IOException, URISyntaxException {
-        Image img = returnSelectedImage();
-        histo = new Histogram(img);
-        //Image nImg = Functionality.createImageAfterHistogramEqualization(img,histo);
-        Image nImg = Functionality.createImageAfterHistogramEqualizationAPO(img,histo);
-        equalHisto = new Histogram(nImg);
-        ImageView nImgView = new ImageView(nImg);
-        Tab tab0 = new Tab (Functionality.getNameWithoutExt(img) + "_equalized." + Functionality.getExtension2(img), nImgView);
-        tabPane.getTabs().add(tab0);
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("histogramEqualization.fxml"));
-        Parent root = loader.load();
-        Stage nstage = new Stage();
-        try { //gdy mamy do czynienia z Image
-            nstage.setTitle("Histogram equalization - " + Functionality.getImageName(img));
-        } catch (NullPointerException e) { //gdy mamy do czynienia z WritableImage
-            Tab selectedTab = sTabPane.getSelectionModel().getSelectedItem(); //pobiera wybraną zakładkę (tab)
-            nstage.setTitle("Histogram equalization - " + selectedTab.getText());
-        }
-        nstage.setScene(new Scene(root));
-        nstage.initOwner(rootNode.getScene().getWindow());
-        nstage.show();
-    }
-
-    @FXML
-    void showHistogramSelectedEqualizationPanel (ActionEvent actionEvent) throws IOException, URISyntaxException {
-        Image img = returnSelectedImage();
-        histo = new Histogram(img);
-        Image nImg = Functionality.createImageAfterSelectedHistogramEqualization(img, histo);
-        DISEqualHisto = new Histogram(nImg);
-        ImageView nImgView = new ImageView(nImg);
-        Tab tab0 = new Tab(Functionality.getNameWithoutExt(img) + "_equalized_DISHE." + Functionality.getExtension2(img), nImgView); //zdjecie.jpg -> zdjecie_copy.jpg
-        tabPane.getTabs().add(tab0);
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("histogramEqualizationDISHE.fxml"));
-        Parent root = loader.load();
-        Stage nstage = new Stage();
-        try { //gdy mamy do czynienia z Image
-            nstage.setTitle("Histogram Equalization (met.DISHE)- " + Functionality.getImageName(img));
-        } catch (NullPointerException e) { //gdy mamy do czynienia z WritableImage
-            Tab selectedTab = sTabPane.getSelectionModel().getSelectedItem(); //pobiera wybraną zakładkę (tab)
-            nstage.setTitle("Histogram Equalization (met.DISHE) - " + selectedTab.getText());
-        }
-        nstage.setScene(new Scene(root));
-        nstage.initOwner(rootNode.getScene().getWindow());
-        nstage.show();
-    }
-
-    @FXML
     public void showHistogramStretchingPanel(ActionEvent actionEvent) throws IOException, URISyntaxException {
         Image img = returnSelectedImage();
         histo = new Histogram(img);
-        Image nImg = Functionality.createImageAfterLinearHistogramStretching(img);
-        stretchHisto = new Histogram(nImg);
-        ImageView nImgView = new ImageView(nImg);
-        Tab tab0 = new Tab(Functionality.getNameWithoutExt(img) + "_stretched." + Functionality.getExtension2(img), nImgView); //zdjecie.jpg -> zdjecie_copy.jpg
-        tabPane.getTabs().add(tab0);
+        //Image nImg = Functionality.createImageAfterLinearHistogramStretching(img);
+        //stretchHisto = new Histogram(nImg);
+        //ImageView nImgView = new ImageView(nImg);
+        //Tab tab0 = new Tab(Functionality.getNameWithoutExt(img) + "_stretched." + Functionality.getExtension2(img), nImgView); //zdjecie.jpg -> zdjecie_stretched.jpg
+        //tabPane.getTabs().add(tab0);
         FXMLLoader loader = new FXMLLoader(getClass().getResource("histogramStretching.fxml"));
         Parent root = loader.load();
         Stage nstage = new Stage();
@@ -375,18 +321,50 @@ public class Controller {
     }
 
     @FXML
-    public void initialize() {
-        sTabPane = tabPane;
+    public void showHistogramEqualizationPanel(ActionEvent actionEvent) throws IOException, URISyntaxException {
+        Image img = returnSelectedImage();
+        histo = new Histogram(img);
+        //Image nImg = Functionality.createImageAfterHistogramEqualization(img,histo);
+        Image nImg = Functionality.createImageAfterHistogramEqualizationAPO(img,histo);
+        equalHisto = new Histogram(nImg);
+        //ImageView nImgView = new ImageView(nImg);
+        //Tab tab0 = new Tab (Functionality.getNameWithoutExt(img) + "_equalized." + Functionality.getExtension2(img), nImgView);
+        //tabPane.getTabs().add(tab0);
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("histogramEqualization.fxml"));
+        Parent root = loader.load();
+        Stage nstage = new Stage();
+        try { //gdy mamy do czynienia z Image
+            nstage.setTitle("Histogram equalization - " + Functionality.getImageName(img));
+        } catch (NullPointerException e) { //gdy mamy do czynienia z WritableImage
+            Tab selectedTab = sTabPane.getSelectionModel().getSelectedItem(); //pobiera wybraną zakładkę (tab)
+            nstage.setTitle("Histogram equalization - " + selectedTab.getText());
+        }
+        nstage.setScene(new Scene(root));
+        nstage.initOwner(rootNode.getScene().getWindow());
+        nstage.show();
     }
 
     @FXML
-    public void inverse(ActionEvent actionEvent) throws MalformedURLException, URISyntaxException {
+    void showHistogramSelectedEqualizationPanel (ActionEvent actionEvent) throws IOException, URISyntaxException {
         Image img = returnSelectedImage();
-        Image nImg = Functionality.invert(img);
-        ImageView nImgView = new ImageView(nImg);
-        Tab tab0 = new Tab(Functionality.getNameWithoutExt(img) + "_invert." + Functionality.getExtension2(img), nImgView); //zdjecie.jpg -> zdjecie_copy.jpg
-        tabPane.getTabs().add(tab0);
-        tabPane.getSelectionModel().select(tabPane.getTabs().size() - 1); //ustawia focus na nowo otwartym oknie
+        histo = new Histogram(img);
+        Image nImg = Functionality.createImageAfterSelectedHistogramEqualization(img, histo);
+        DISEqualHisto = new Histogram(nImg);
+        //ImageView nImgView = new ImageView(nImg);
+        //Tab tab0 = new Tab(Functionality.getNameWithoutExt(img) + "_equalized_DISHE." + Functionality.getExtension2(img), nImgView); //zdjecie.jpg -> zdjecie_copy.jpg
+        //tabPane.getTabs().add(tab0);
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("histogramEqualizationDISHE.fxml"));
+        Parent root = loader.load();
+        Stage nstage = new Stage();
+        try { //gdy mamy do czynienia z Image
+            nstage.setTitle("Histogram Equalization (met.DISHE)- " + Functionality.getImageName(img));
+        } catch (NullPointerException e) { //gdy mamy do czynienia z WritableImage
+            Tab selectedTab = sTabPane.getSelectionModel().getSelectedItem(); //pobiera wybraną zakładkę (tab)
+            nstage.setTitle("Histogram Equalization (met.DISHE) - " + selectedTab.getText());
+        }
+        nstage.setScene(new Scene(root));
+        nstage.initOwner(rootNode.getScene().getWindow());
+        nstage.show();
     }
 
     @FXML
@@ -440,6 +418,22 @@ public class Controller {
         nstage.setScene(new Scene(root));
         nstage.initOwner(rootNode.getScene().getWindow());
         nstage.show();
+    }
+
+    @FXML
+    public void initialize() {
+        sTabPane = tabPane;
+
+    }
+
+    @FXML
+    public void inverse(ActionEvent actionEvent) throws MalformedURLException, URISyntaxException {
+        Image img = returnSelectedImage();
+        Image nImg = Functionality.invert(img);
+        ImageView nImgView = new ImageView(nImg);
+        Tab tab0 = new Tab(Functionality.getNameWithoutExt(img) + "_invert." + Functionality.getExtension2(img), nImgView); //zdjecie.jpg -> zdjecie_copy.jpg
+        tabPane.getTabs().add(tab0);
+        tabPane.getSelectionModel().select(tabPane.getTabs().size() - 1); //ustawia focus na nowo otwartym oknie
     }
 }
 

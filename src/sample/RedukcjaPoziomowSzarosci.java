@@ -2,6 +2,7 @@ package sample;
 
 import com.jfoenix.controls.JFXComboBox;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.image.Image;
@@ -18,8 +19,7 @@ public class RedukcjaPoziomowSzarosci {
     @FXML
     private JFXComboBox combo_box;
 
-    private Image originalImage;
-    private Image destinationImage;
+    private Image originalImage, originalImageGrayscale, destinationImage;
 
     @FXML
     public void initialize() {
@@ -31,6 +31,12 @@ public class RedukcjaPoziomowSzarosci {
             imageViewR.setImage(destinationImage);
         });
         originalImage = Controller.returnSelectedImage();
-        imageViewL.setImage(originalImage);
+        originalImageGrayscale = Functionality.rgbToGrayscale(originalImage);
+        imageViewL.setImage(originalImageGrayscale);
+    }
+
+    @FXML
+    void saveDestinationImage(ActionEvent event) {
+        Functionality.save(originalImage,destinationImage);
     }
 }

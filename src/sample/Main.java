@@ -5,8 +5,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.opencv.core.Core;
 
 public class Main extends Application {
+    static{ System.loadLibrary(Core.NATIVE_LIBRARY_NAME); }
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -21,3 +23,6 @@ public class Main extends Application {
         launch(args);
     }
 }
+
+//how to set up OpenCV in IntelliJ:
+//https://medium.com/@aadimator/how-to-set-up-opencv-in-intellij-idea-6eb103c1d45c

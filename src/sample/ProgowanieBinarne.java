@@ -1,5 +1,7 @@
 package sample;
 
+import com.jfoenix.controls.JFXButton;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -7,17 +9,23 @@ import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+
 public class ProgowanieBinarne {
 
     @FXML
     private ImageView imageViewL;
-
     @FXML
     private ImageView imageViewR;
-
     @FXML
     private Slider slider;
-
     @FXML
     private Label prog;
 
@@ -26,7 +34,7 @@ public class ProgowanieBinarne {
 
     @FXML
     void saveDestinationImage(ActionEvent event) {
-
+        Functionality.save(originalImage,destinationImage);
     }
 
     @FXML

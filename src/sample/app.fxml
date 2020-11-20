@@ -42,13 +42,13 @@
                         <items>
                             <MenuItem mnemonicParsing="false" onAction="#showHistogramPanel" text="Histogram" />
                             <MenuItem mnemonicParsing="false" onAction="#showHistogramStretchingPanel" text="Linear Histogram Stretching" />
+                            <MenuItem mnemonicParsing="false" onAction="#showHistogramStretchingWithRangePanel" text="Linear Histogram Stretching with specified range" />
                             <MenuItem mnemonicParsing="false" onAction="#showHistogramEqualizationPanel" text="Histogram Equalization" />
                             <MenuItem mnemonicParsing="false" onAction="#showHistogramSelectedEqualizationPanel" text="DSI Histogram Equalization" />
-                            <MenuItem mnemonicParsing="false" onAction="#showHistogramStretchingWithRangePanel" text="Linear Histogram Stretching with specified range" />
-                            <MenuItem mnemonicParsing="false" onAction="#inverse" text="Inverse" />
                             <MenuItem mnemonicParsing="false" onAction="#showProgowaniePanel1" text="Binary Thresholding" />
                             <MenuItem mnemonicParsing="false" onAction="#showProgowaniePanel2" text="Thresholding" />
                             <MenuItem mnemonicParsing="false" onAction="#showRedukcjaPanel" text="Reduction of intensity levels" />
+                            <MenuItem mnemonicParsing="false" onAction="#inverse" text="Inverse" />
                         </items>
                     </Menu>
                     <Menu mnemonicParsing="false" text="Help">
