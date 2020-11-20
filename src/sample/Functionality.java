@@ -39,7 +39,7 @@ public class Functionality {
                 int r = (0xff & (argb >> 16));
                 int g = (0xff & (argb >> 8));
                 int b = (0xff & argb);
-                int i = (int) Math.round(.299 * r + .587 * g + 0.114 * b);
+                int i = (int) Math.round(.299 * r + .587 * g + .114 * b);
                 int nargb = (a << 24) | (i << 16) | (i << 8) | i;
                 pixelWriter.setArgb(x, y, nargb);
             }
@@ -98,7 +98,7 @@ public class Functionality {
                 int r = (0xff & (argb >> 16));
                 int g = (0xff & (argb >> 8));
                 int b = (0xff & argb);
-                int intensity = (int) Math.round(.299 * r + .587 * g + 0.114 * b);
+                int intensity = (int) Math.round(.299 * r + .587 * g + .114 * b);
 
                 int fmin, fmax, Lmax, offset, newIntensity;
                 if (intensity < p1) {
@@ -220,7 +220,7 @@ public class Functionality {
                 int r = (0xff & (argb >> 16));
                 int g = (0xff & (argb >> 8));
                 int b = (0xff & argb);
-                int intensity = (int) (.299 * r + .587 * g + 0.114 * b);
+                int intensity = (int) Math.round (.299 * r + .587 * g + .114 * b);
                 intensity = LUT[intensity];
                 int nargb = (a << 24) | (intensity << 16) | (intensity << 8) | intensity;
                 pixelWriter.setArgb(x, y, nargb);
@@ -325,7 +325,7 @@ public class Functionality {
                 int r = (0xff & (argb >> 16));
                 int g = (0xff & (argb >> 8));
                 int b = (0xff & argb);
-                int intensity = (int) (.299 * r + .587 * g + 0.114 * b);
+                int intensity = (int) Math.round(.299 * r + .587 * g + .114 * b);
                 intensity = LUT[intensity];
                 int nargb = (a << 24) | (intensity << 16) | (intensity << 8) | intensity;
                 pixelWriter.setArgb(x, y, nargb);
@@ -364,7 +364,7 @@ public class Functionality {
                 int r = (0xff & (argb >> 16));
                 int g = (0xff & (argb >> 8));
                 int b = (0xff & argb);
-                int i = (int) Math.round(.299 * r + .587 * g + 0.114 * b);
+                int i = (int) Math.round(.299 * r + .587 * g + .114 * b);
 
                 if (i <= prog) i = 0;
                 else i = 255;
@@ -391,7 +391,7 @@ public class Functionality {
                 int r = (0xff & (argb >> 16));
                 int g = (0xff & (argb >> 8));
                 int b = (0xff & argb);
-                int i = (int) (.299 * r + .587 * g + 0.114 * b);
+                int i = (int) Math.round(.299 * r + .587 * g + .114 * b);
 
                 if (i <= prog) i = 0;
 
@@ -434,7 +434,7 @@ public class Functionality {
                 int r = (0xff & (argb >> 16));
                 int g = (0xff & (argb >> 8));
                 int b = (0xff & argb);
-                int i = (int) (.299 * r + .587 * g + 0.114 * b);
+                int i = (int) Math.round(.299 * r + .587 * g + .114 * b);
                 //przypisywanie nowych wartości w zależności od progu
                 while (true) {
                     if (i <= progi[j]) {
