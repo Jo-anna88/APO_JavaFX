@@ -13,7 +13,7 @@
     <children>
     <VBox prefHeight="460.0" prefWidth="940.0">
         <children>
-            <HBox alignment="CENTER" prefHeight="421.0" prefWidth="940.0">
+            <HBox alignment="CENTER" prefHeight="421.0" prefWidth="940.0" spacing="10.0">
                 <children>
                     <ImageView fx:id="imageViewL" fitHeight="350.0" fitWidth="455.0" pickOnBounds="true" preserveRatio="true" />
                     <ImageView fx:id="imageViewR" fitHeight="350.0" fitWidth="455.0" pickOnBounds="true" preserveRatio="true" />
@@ -21,7 +21,7 @@
             </HBox>
             <HBox prefHeight="39.0" prefWidth="940.0">
                 <children>
-                    <Label alignment="CENTER" prefHeight="40.0" prefWidth="470.0" text="Original Image" />
+                    <Label alignment="CENTER" prefHeight="40.0" prefWidth="470.0" text="Original Image in Grayscale" />
                     <Label alignment="CENTER" prefHeight="40.0" prefWidth="470.0" text="Destination Image" />
                 </children>
             </HBox>

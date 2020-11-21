@@ -24,15 +24,14 @@ public class HistogramEqualization {
     Histogram equalHistogram;
     BarChart<String, Number> histogramIntensity;
     BarChart<String, Number> histogramIntensity2;
-    Image originalImage, originalImageGrayscale, destinationImage;
+    Image originalImage, destinationImage;
 
     @FXML
     public void initialize() {
         stackPaneL.getChildren().add(histogramIntensity);
         stackPaneR.getChildren().add(histogramIntensity2);
         originalImage = histo.getImage();
-        originalImageGrayscale = Functionality.rgbToGrayscale(histo.getImage());
-        imageViewL.setImage(originalImageGrayscale);
+        imageViewL.setImage(Functionality.rgbToGrayscale(originalImage));
         destinationImage = equalHisto.getImage();
         imageViewR.setImage(destinationImage);
     }

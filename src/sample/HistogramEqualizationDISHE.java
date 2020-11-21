@@ -25,13 +25,12 @@ public class HistogramEqualizationDISHE {
     Histogram DISEqualHistogram;
     BarChart<String, Number> histogramIntensity;
     BarChart<String, Number> histogramIntensity2;
-    Image originalImage, originalImageGrayscale, destinationImage;
+    Image originalImage, destinationImage;
 
     @FXML
     public void initialize() {
         originalImage = Controller.returnSelectedImage();
-        originalImageGrayscale = Functionality.rgbToGrayscale(originalImage);
-        imageViewL.setImage(originalImageGrayscale);
+        imageViewL.setImage(Functionality.rgbToGrayscale(originalImage));
         destinationImage = DISEqualHisto.getImage();
         imageViewR.setImage(destinationImage);
         stackPaneL.getChildren().add(histogramIntensity);

@@ -65,8 +65,8 @@ public class HistogramStretching {
             stackPaneR.getChildren().addAll(histogramChannelRed2, histogramChannelGreen2, histogramChannelBlue2);
         }
         else {
-            stackPaneL.getChildren().addAll(histogramIntensity);
-            stackPaneR.getChildren().addAll(histogramIntensity2);
+            stackPaneL.getChildren().add(histogramIntensity);
+            stackPaneR.getChildren().add(histogramIntensity2);
         }
     }
 

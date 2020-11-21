@@ -26,7 +26,7 @@ public class ProgowanieZachowaniePoziomowSzarosci {
 
     @FXML
     void saveDestinationImage(ActionEvent event) {
-
+        Functionality.save(originalImage,destinationImage);
     }
 
     @FXML
@@ -44,7 +44,7 @@ public class ProgowanieZachowaniePoziomowSzarosci {
             imageViewR.setImage(destinationImage);
         });
         originalImage = Controller.returnSelectedImage();
-        imageViewL.setImage(originalImage);
+        imageViewL.setImage(Functionality.rgbToGrayscale(originalImage));
     }
 
 }

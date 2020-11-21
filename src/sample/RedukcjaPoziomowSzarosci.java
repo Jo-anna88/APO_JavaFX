@@ -19,7 +19,7 @@ public class RedukcjaPoziomowSzarosci {
     @FXML
     private JFXComboBox combo_box;
 
-    private Image originalImage, originalImageGrayscale, destinationImage;
+    private Image originalImage, destinationImage;
 
     @FXML
     public void initialize() {
@@ -31,8 +31,7 @@ public class RedukcjaPoziomowSzarosci {
             imageViewR.setImage(destinationImage);
         });
         originalImage = Controller.returnSelectedImage();
-        originalImageGrayscale = Functionality.rgbToGrayscale(originalImage);
-        imageViewL.setImage(originalImageGrayscale);
+        imageViewL.setImage(Functionality.rgbToGrayscale(originalImage));
     }
 
     @FXML

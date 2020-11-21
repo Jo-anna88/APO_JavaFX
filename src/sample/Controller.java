@@ -431,7 +431,12 @@ public class Controller {
         Image img = returnSelectedImage();
         Image nImg = Functionality.invert(img);
         ImageView nImgView = new ImageView(nImg);
-        Tab tab0 = new Tab(Functionality.getNameWithoutExt(img) + "_invert." + Functionality.getExtension2(img), nImgView); //zdjecie.jpg -> zdjecie_copy.jpg
+        Tab tab0;
+        try {
+            tab0 = new Tab(Functionality.getNameWithoutExt(img) + "_invert." + Functionality.getExtension2(img), nImgView); //zdjecie.jpg -> zdjecie_copy.jpg
+        } catch (NullPointerException e) {
+            tab0 = new Tab("image_invert.png",nImgView);
+        }
         tabPane.getTabs().add(tab0);
         tabPane.getSelectionModel().select(tabPane.getTabs().size() - 1); //ustawia focus na nowo otwartym oknie
     }

@@ -29,8 +29,7 @@ public class ProgowanieBinarne {
     @FXML
     private Label prog;
 
-    private Image originalImage;
-    private Image destinationImage;
+    private Image originalImage, destinationImage;
 
     @FXML
     void saveDestinationImage(ActionEvent event) {
@@ -52,6 +51,6 @@ public class ProgowanieBinarne {
             imageViewR.setImage(destinationImage);
         });
         originalImage = Controller.returnSelectedImage();
-        imageViewL.setImage(originalImage);
+        imageViewL.setImage(Functionality.rgbToGrayscale(originalImage));
     }
 }
