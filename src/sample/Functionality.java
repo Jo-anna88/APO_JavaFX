@@ -6,19 +6,25 @@ import javafx.scene.control.Tab;
 import javafx.scene.image.*;
 import javafx.scene.paint.Color;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.stage.FileChooser;
-import org.opencv.core.Mat;
+import org.opencv.core.*;
+import org.opencv.highgui.HighGui;
+import org.opencv.imgproc.Imgproc;
 
 import javax.imageio.ImageIO;
+
+import static org.opencv.core.Core.BORDER_DEFAULT;
 
 public class Functionality {
     //////////////////////////////Functionality connecting with images//////////////////////////////////////////////////////
@@ -458,6 +464,71 @@ public class Functionality {
 //    public static Image mediana(Image img) {
 //
 //    }
+    //////////////////////////////////////////////////LAB3/////////////////////////////////////////////////////////
+
+    public static Image median(Mat src, Mat dst, int ksize) {
+        Imgproc.medianBlur(src, dst, ksize); //borderType -> median filter uses BORDER_REPLICATE internally (aaaaaa|abcdefgh|hhhhhhh)
+        //Converting matrix to JavaFX writable image
+        java.awt.Image img = HighGui.toBufferedImage(dst); //a jak to zrobić dla javafx.Image ??
+        WritableImage writableImage= SwingFXUtils.toFXImage((BufferedImage) img, null);
+        return writableImage;
+    }
+    public static Image median(Mat src, Mat dst, int ksize, int methodForBorderPixels) {
+        //int top, bottom, left, right; ==ksize-2
+        int border = ksize-2;
+        Mat bufImage = new Mat(src.rows()+border*2, src.cols()+border*2, src.type() );
+        int borderType;
+        switch (methodForBorderPixels) {
+            case 1:
+                borderType = Core.BORDER_REFLECT; //reflect     fedcba|abcdefgh|hgfedcb
+                break;
+            case 2:
+                borderType = Core.BORDER_WRAP; //wrap           cdefgh|abcdefgh|abcdefg
+                break;
+            case 3:
+                borderType = Core.BORDER_CONSTANT; //constant   iiiiii|abcdefgh|iiiiii
+                break;
+            //case 4:
+            //set original value
+            // break;
+            default:
+                borderType = Core.BORDER_REPLICATE;
+        }
+        //Random rng = new Random();
+        //Scalar value = new Scalar (rng.nextInt(256), rng.nextInt(256),rng.nextInt(256));
+        Core.copyMakeBorder( src, bufImage, border, border, border, border, borderType);
+        Imgproc.medianBlur(bufImage,dst,ksize);
+        java.awt.Image img = HighGui.toBufferedImage(dst); //a jak to zrobić dla javafx.Image ??
+        WritableImage writableImage= SwingFXUtils.toFXImage((BufferedImage) img, null);
+        return writableImage;
+    }
+    public static Image smooth(Mat src, int size, int choice, int K) {
+        Mat dst = new Mat(src.rows(), src.cols(), src.type());
+        Point anchor = new Point(-1,-1);
+        Size kSize = new Size(size,size);
+        switch(choice) {
+            case 0: //uśrednianie
+                Imgproc.blur(src,dst,kSize,anchor,BORDER_DEFAULT);
+                break;
+            case 1: //uśrednianie K-pudełkowe
+                break;
+            case 2: //filtr gaussowski
+                Imgproc.GaussianBlur(src,dst,kSize,0); //sigmaX-Gaussian kernel standard deviation in X direction
+                break;
+        }
+
+        java.awt.Image img = HighGui.toBufferedImage(dst);
+        WritableImage writableImage = SwingFXUtils.toFXImage((BufferedImage)img, null);
+        return writableImage;
+    }
+    public static Image laplasjan(Mat src, int size, int choice) {
+        Mat dst = new Mat(src.rows(), src.cols(), src.type());
+        Point anchor = new Point(-1,-1);
+        Imgproc.Laplacian(src,dst,-1,size);
+        java.awt.Image img = HighGui.toBufferedImage(dst);
+        WritableImage writableImage = SwingFXUtils.toFXImage((BufferedImage)img, null);
+        return writableImage;
+    }
 
 
     //////////////////////////////Functionality connecting with files//////////////////////////////////////////////////////

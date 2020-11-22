@@ -21,6 +21,9 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -29,6 +32,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -421,12 +425,6 @@ public class Controller {
     }
 
     @FXML
-    public void initialize() {
-        sTabPane = tabPane;
-
-    }
-
-    @FXML
     public void inverse(ActionEvent actionEvent) throws MalformedURLException, URISyntaxException {
         Image img = returnSelectedImage();
         Image nImg = Functionality.invert(img);
@@ -439,6 +437,112 @@ public class Controller {
         }
         tabPane.getTabs().add(tab0);
         tabPane.getSelectionModel().select(tabPane.getTabs().size() - 1); //ustawia focus na nowo otwartym oknie
+    }
+    public void showMedianPanel(ActionEvent actionEvent) throws IOException {
+        Image img = returnSelectedImage();
+//        Mat src = new Mat(), dst = new Mat();
+//        try {
+//            String filepath = img.getUrl();
+//            src = Imgcodecs.imread(filepath, Imgcodecs.IMREAD_COLOR);
+//        } catch () {
+//
+//        }
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("Median.fxml"));
+        Parent root = loader.load();
+        Stage nstage = new Stage();
+        try { //gdy mamy do czynienia z Image
+            nstage.setTitle("Median - " + Functionality.getImageName(img));
+        } catch (NullPointerException e) { //gdy mamy do czynienia z WritableImage
+            Tab selectedTab = sTabPane.getSelectionModel().getSelectedItem(); //pobiera wybraną zakładkę (tab)
+            nstage.setTitle("Median - " + selectedTab.getText());
+        }
+        nstage.setScene(new Scene(root));
+        nstage.initOwner(rootNode.getScene().getWindow());
+        nstage.show();
+    }
+
+    public void showSmoothingPanel(ActionEvent actionEvent) throws IOException{
+        Image img = returnSelectedImage();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("Smoothing.fxml"));
+        Parent root = loader.load();
+        Stage nstage = new Stage();
+        try { //gdy mamy do czynienia z Image
+            nstage.setTitle("Smoothing - " + Functionality.getImageName(img));
+        } catch (NullPointerException e) { //gdy mamy do czynienia z WritableImage
+            Tab selectedTab = sTabPane.getSelectionModel().getSelectedItem(); //pobiera wybraną zakładkę (tab)
+            nstage.setTitle("Smoothing - " + selectedTab.getText());
+        }
+        nstage.setScene(new Scene(root));
+        nstage.initOwner(rootNode.getScene().getWindow());
+        nstage.show();
+    }
+
+    public void showSharpenPanel(ActionEvent actionEvent) throws IOException{ //LAPLASJAN
+        Image img = returnSelectedImage();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("Sharpening.fxml"));
+        Parent root = loader.load();
+        Stage nstage = new Stage();
+        try { //gdy mamy do czynienia z Image
+            nstage.setTitle("Sharpening - " + Functionality.getImageName(img));
+        } catch (NullPointerException e) { //gdy mamy do czynienia z WritableImage
+            Tab selectedTab = sTabPane.getSelectionModel().getSelectedItem(); //pobiera wybraną zakładkę (tab)
+            nstage.setTitle("Sharpening - " + selectedTab.getText());
+        }
+        nstage.setScene(new Scene(root));
+        nstage.initOwner(rootNode.getScene().getWindow());
+        nstage.show();
+    }
+
+    public void showEdgeDetectionPanel1(ActionEvent actionEvent) throws IOException{
+        Image img = returnSelectedImage();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("Prewitt.fxml"));
+        Parent root = loader.load();
+        Stage nstage = new Stage();
+        try { //gdy mamy do czynienia z Image
+            nstage.setTitle("Edge Detection - Prewitt - " + Functionality.getImageName(img));
+        } catch (NullPointerException e) { //gdy mamy do czynienia z WritableImage
+            Tab selectedTab = sTabPane.getSelectionModel().getSelectedItem(); //pobiera wybraną zakładkę (tab)
+            nstage.setTitle("Edge Detection - Prewitt - " + selectedTab.getText());
+        }
+        nstage.setScene(new Scene(root));
+        nstage.initOwner(rootNode.getScene().getWindow());
+        nstage.show();
+    }
+
+    public void showEdgeDetectionPanel2(ActionEvent actionEvent) throws IOException{
+        Image img = returnSelectedImage();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("Sobel_Canny.fxml"));
+        Parent root = loader.load();
+        Stage nstage = new Stage();
+        try { //gdy mamy do czynienia z Image
+            nstage.setTitle("Edge Detection - Sobel/Canny - " + Functionality.getImageName(img));
+        } catch (NullPointerException e) { //gdy mamy do czynienia z WritableImage
+            Tab selectedTab = sTabPane.getSelectionModel().getSelectedItem(); //pobiera wybraną zakładkę (tab)
+            nstage.setTitle("Edge Detection - Sobel/Canny - " + selectedTab.getText());
+        }
+        nstage.setScene(new Scene(root));
+        nstage.initOwner(rootNode.getScene().getWindow());
+        nstage.show();
+    }
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @FXML
+    public void initialize() {
+        sTabPane = tabPane;
+
+    }
+    //////////////////////////////////////////
+    public static Mat imageToMat(Image image) {
+        int width = (int) image.getWidth();
+        int height = (int) image.getHeight();
+        byte[] buffer = new byte[width * height * 4];
+
+        PixelReader reader = image.getPixelReader();
+        WritablePixelFormat<ByteBuffer> format = WritablePixelFormat.getByteBgraInstance();
+        reader.getPixels(0, 0, width, height, format, buffer, 0, width * 4);
+
+        Mat mat = new Mat(height, width, CvType.CV_8UC4);
+        mat.put(0, 0, buffer);
+        return mat;
     }
 }
 
