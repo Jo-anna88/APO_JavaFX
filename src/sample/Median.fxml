@@ -2,8 +2,7 @@
 
 <?import com.jfoenix.controls.JFXButton?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.ChoiceBox?>
-<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
@@ -34,14 +33,23 @@
                 </JFXButton>
             </children>
         </HBox>
-            <HBox alignment="CENTER" prefHeight="50.0" prefWidth="200.0" spacing="50.0">
+            <HBox alignment="CENTER" prefHeight="50.0" prefWidth="200.0" spacing="20.0">
                <children>
-                  <Region prefHeight="100.0" prefWidth="64.0" />
-                  <Label prefHeight="17.0" prefWidth="104.0" text="Wielkość otoczenia:" />
+                  <Label prefHeight="17.0" prefWidth="90.0" text="Matrix filter size:" />
                   <ChoiceBox fx:id="choiceBox1" prefHeight="25.0" prefWidth="55.0" />
-                  <Region prefHeight="100.0" prefWidth="70.0" />
-                  <Label text="Metoda uzupełniania pikseli brzegowych: " />
-                  <ChoiceBox fx:id="choiceBox2" prefWidth="150.0" />
+                  <Region prefHeight="45.0" prefWidth="74.0" />
+                  <Label text="Border pixels:" />
+                  <ChoiceBox fx:id="choiceBox2" prefWidth="250.0" />
+                  <AnchorPane fx:id="anchorPane" prefHeight="200.0" prefWidth="200.0" visible="false">
+                     <children>
+                        <Label layoutX="14.0" layoutY="14.0" text="Value:" />
+                        <Spinner fx:id="spinner" editable="true" layoutX="51.0" layoutY="10.0" prefHeight="25.0" prefWidth="60.0" >
+                            <valueFactory>
+                                <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="0" max="255" min="0" />
+                            </valueFactory>
+                        </Spinner>
+                     </children>
+                  </AnchorPane>
                </children>
                <padding>
                   <Insets left="10.0" right="10.0" />

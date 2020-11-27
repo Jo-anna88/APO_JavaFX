@@ -49,6 +49,7 @@
                             <MenuItem mnemonicParsing="false" onAction="#showProgowaniePanel2" text="Thresholding" />
                             <MenuItem mnemonicParsing="false" onAction="#showRedukcjaPanel" text="Reduction of intensity levels" />
                             <MenuItem mnemonicParsing="false" onAction="#inverse" text="Inverse" />
+                            <SeparatorMenuItem mnemonicParsing="false" />
                             <MenuItem mnemonicParsing="false" onAction="#showMedianPanel" text="Median Smoothing" />
                             <MenuItem mnemonicParsing="false" onAction="#showSmoothingPanel" text="Smoothing" />
                             <MenuItem mnemonicParsing="false" onAction="#showSharpenPanel" text="Sharpening" />

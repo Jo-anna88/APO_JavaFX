@@ -1,7 +1,9 @@
 package sample;
 
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
@@ -35,6 +37,9 @@ public class Sharpening {
     private ToggleButton toggleBtn2;
     @FXML
     private ToggleButton toggleBtn3;
+
+    @FXML
+    private ChoiceBox choiceBox;
 
     private String url1=new File("./resources/laplasjan1.PNG").toURI().toURL().toString();
     private String url2=new File("./resources/laplasjan2.PNG").toURI().toURL().toString();
@@ -71,6 +76,7 @@ public class Sharpening {
         toggleBtn3.setGraphic(imageMatrix3);
         toggleBtn3.setUserData(3);
         ////////////////////////////////////////////////////
+        choiceBox.setItems(FXCollections.observableArrayList("reflect", "wrap", "constant", "leave original values"));
     }
 
     @FXML
@@ -80,6 +86,7 @@ public class Sharpening {
     @FXML
     void acceptSettings(ActionEvent event) {
         choice = (int) ToggleGroup.getSelectedToggle().getUserData();
+        choiceBox.getSelectionModel().getSelectedItem();
         destinationImage = Functionality.laplasjan(src,size,choice);
         //imageViewR.setImage(destinationImage);
         event.consume();

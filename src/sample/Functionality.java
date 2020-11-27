@@ -13,6 +13,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,7 +26,10 @@ import org.opencv.imgproc.Imgproc;
 
 import javax.imageio.ImageIO;
 
+import static org.opencv.core.Core.BORDER_CONSTANT;
 import static org.opencv.core.Core.BORDER_DEFAULT;
+import static org.opencv.core.Core.BORDER_REPLICATE;
+import static org.opencv.imgcodecs.Imgcodecs.imread;
 
 public class Functionality {
     //////////////////////////////Functionality connecting with images//////////////////////////////////////////////////////
@@ -473,10 +478,8 @@ public class Functionality {
         WritableImage writableImage= SwingFXUtils.toFXImage((BufferedImage) img, null);
         return writableImage;
     }
-    public static Image median(Mat src, Mat dst, int ksize, int methodForBorderPixels) {
-        //int top, bottom, left, right; ==ksize-2
-        int border = ksize-2;
-        Mat bufImage = new Mat(src.rows()+border*2, src.cols()+border*2, src.type() );
+
+    public static Image median(Mat src, Mat dst, int ksize, int methodForBorderPixels, int value) {
         int borderType;
         switch (methodForBorderPixels) {
             case 1:
@@ -487,33 +490,177 @@ public class Functionality {
                 break;
             case 3:
                 borderType = Core.BORDER_CONSTANT; //constant   iiiiii|abcdefgh|iiiiii
+                // !! (tu wg wykładów ma być bez dodawania kolumn i wierszy pomocniczych, a jedynie nadanie skrajnym kolumnom i wierszom stałej wartości)
                 break;
-            //case 4:
-            //set original value
-            // break;
+            case 4:
+                borderType=4; //leave original value (bez dodawania kolumn i wierszy pomocniczych)
+                Imgproc.medianBlur(src,dst,ksize); //robimy filtrację metodą domyślną (potem zastąpimy wartości skrajnych pikseli wartościami z obrazu źródłowego)
+                break;
             default:
-                borderType = Core.BORDER_REPLICATE;
+                //borderType = Core.BORDER_REPLICATE;
+                Imgproc.medianBlur(src,dst,ksize);
+                java.awt.Image img = HighGui.toBufferedImage(dst); //a jak to zrobić dla javafx.Image ??
+                WritableImage writableImage= SwingFXUtils.toFXImage((BufferedImage) img, null);
+                return writableImage;
         }
-        //Random rng = new Random();
-        //Scalar value = new Scalar (rng.nextInt(256), rng.nextInt(256),rng.nextInt(256));
-        Core.copyMakeBorder( src, bufImage, border, border, border, border, borderType);
-        Imgproc.medianBlur(bufImage,dst,ksize);
-        java.awt.Image img = HighGui.toBufferedImage(dst); //a jak to zrobić dla javafx.Image ??
-        WritableImage writableImage= SwingFXUtils.toFXImage((BufferedImage) img, null);
+        //jeśli nie stosujemy metody domyślnej musimy uzupełnić piksele brzegowe "własnoręcznie"
+
+        //1. tworzymy obraz uzupełniony o brzeg (bufImage) dla danego obrazu (src): powiększony z każdej strony o x pikseli (border),
+        //   wykorzystując daną (wbudowaną) metodę uzupełniania wartości dla tych pikseli (uwaga! - nie dotyczy opcji nr 4!)
+        //int top, bottom, left, right; ==ksize-2
+        int border = ksize-2;
+
+        if (borderType!=4) {
+            Mat bufImage = new Mat(src.rows()+border*2, src.cols()+border*2, src.type() ); //matryca dla obrazu źródłowego powiększonego o brzeg
+            Mat dstPlus = new Mat(bufImage.rows(),bufImage.cols(),bufImage.type()); //matryca dla obrazu wynikowego po filtracji medianowej na bufImage
+
+            if (borderType == BORDER_CONSTANT)
+                Core.copyMakeBorder(src, bufImage, border, border, border, border, BORDER_CONSTANT, new Scalar(value, value, value)); //Scalar (B, G, R (,alpha))
+            else
+                Core.copyMakeBorder(src, bufImage, border, border, border, border, borderType);
+
+            //2. wykonanie filtracji medianowej na tym obrazie (powiększonym) - nie interesuje nas, że dla dodatkowego brzegu użyje met.domyślnej
+            Imgproc.medianBlur(bufImage, dstPlus, ksize);
+            //3. usunięcie zbędnego brzegu z obrazu (wskazanie ROI?) - create subimage / crop (rtcg)
+            //https://stackoverflow.com/questions/15589517/how-to-crop-an-image-in-opencv-using-python <-- using Python
+            Rect roi = new Rect(border,border,src.cols(),src.rows()); //x_start, y_start, width, height
+            Mat dst2 = new Mat(dstPlus,roi);
+            //4. przesłanie obrazu po filtracji
+            java.awt.Image img = HighGui.toBufferedImage(dst2); //a jak to zrobić dla javafx.Image ??
+            WritableImage writableImage = SwingFXUtils.toFXImage((BufferedImage) img, null);
+            return writableImage;
+        }
+
+//      2. zmiana wartości skrajnych pikseli na te z obrazu źródłowego
+        putOriginalValue(src,dst,ksize);
+
+        java.awt.Image img = HighGui.toBufferedImage(dst);
+        WritableImage writableImage = SwingFXUtils.toFXImage((BufferedImage)img,null);
         return writableImage;
     }
-    public static Image smooth(Mat src, int size, int choice, int K) {
+
+    public static Mat blurConstant (Mat src, int ksize, int value) { //uśrednianie dla BORDER_CONSTANT
+        int border = ksize - 2;
+        Mat bufImage = new Mat(src.rows() + border * 2, src.cols() + border * 2, src.type()); //matryca dla obrazu źródłowego powiększonego o brzeg
+        Mat dstPlus = new Mat(bufImage.rows(), bufImage.cols(), bufImage.type()); //matryca dla obrazu wynikowego po filtracji medianowej na bufImage
+        Core.copyMakeBorder(src, bufImage, border, border, border, border, BORDER_CONSTANT, new Scalar(value, value, value)); //Scalar (B, G, R (,alpha))
+        Imgproc.blur(bufImage, dstPlus, new Size(ksize,ksize));
+        Rect roi = new Rect(border,border,src.cols(),src.rows()); //x_start, y_start, width, height
+        Mat dst2 = new Mat(dstPlus,roi);
+        return dst2;
+    }
+
+    public static Mat filter2dConstant (Mat src, int ksize, int value, Mat kernel) {
+        int border = ksize - 2;
+        Mat bufImage = new Mat(src.rows() + border * 2, src.cols() + border * 2, src.type()); //matryca dla obrazu źródłowego powiększonego o brzeg
+        Mat dstPlus = new Mat(bufImage.rows(), bufImage.cols(), bufImage.type()); //matryca dla obrazu wynikowego po filtracji medianowej na bufImage
+        Core.copyMakeBorder(src, bufImage, border, border, border, border, BORDER_CONSTANT, new Scalar(value, value, value)); //Scalar (B, G, R (,alpha))
+        Imgproc.filter2D(bufImage, dstPlus,-1,kernel);
+        Rect roi = new Rect(border,border,src.cols(),src.rows()); //x_start, y_start, width, height
+        Mat dst2 = new Mat(dstPlus,roi);
+        return dst2;
+    }
+
+    public static Mat gaussBlurConstant (Mat src, int ksize, int value) {
+        int border = ksize - 2;
+        Mat bufImage = new Mat(src.rows() + border * 2, src.cols() + border * 2, src.type()); //matryca dla obrazu źródłowego powiększonego o brzeg
+        Mat dstPlus = new Mat(bufImage.rows(), bufImage.cols(), bufImage.type()); //matryca dla obrazu wynikowego po filtracji medianowej na bufImage
+        Core.copyMakeBorder(src, bufImage, border, border, border, border, BORDER_CONSTANT, new Scalar(value, value, value)); //Scalar (B, G, R (,alpha))
+        Imgproc.GaussianBlur(bufImage, dstPlus, new Size(ksize,ksize),0);
+        Rect roi = new Rect(border,border,src.cols(),src.rows()); //x_start, y_start, width, height
+        Mat dst2 = new Mat(dstPlus,roi);
+        return dst2;
+    }
+
+    public static void putOriginalValue (Mat src, Mat dst, int ksize) {
+        int border = ksize-2;
+        int height = src.rows();
+        int weight = src.cols();
+        for (int i=0; i<height; i++) {
+            if (i<border || i>=(height-border)) { //góra lub dół obrazu
+                for (int j = 0; j < weight; j++) {
+                    double[] data = src.get(i, j); //get(int row, int col) - pobranie wartości z obrazu źródłowego
+                    dst.put(i, j, data); //wstawienie wartości dla obrazu wyjściowego
+                }
+            }
+            else {
+                for (int j=0; j<border; j++) { //lewa strona obrazu
+                    double[] data = src.get(i, j);
+                    dst.put(i, j, data);
+                }
+                for (int j=weight-border; j<weight; j++) { //prawa strona obrazu
+                    double[] data = src.get(i, j);
+                    dst.put(i, j, data);
+                }
+            }
+        }
+    }
+
+    public static Image smooth(Mat src, int ksize, int choiceOfSmoothingType, int choiceOfBorderType, int value, int K) {
         Mat dst = new Mat(src.rows(), src.cols(), src.type());
         Point anchor = new Point(-1,-1);
-        Size kSize = new Size(size,size);
-        switch(choice) {
+        Size kSize = new Size(ksize,ksize);
+        int borderType;
+        switch (choiceOfBorderType) {
+            case 1:
+                borderType = Core.BORDER_REFLECT; //reflect         fedcba|abcdefgh|hgfedcb
+                break;
+            case 2:
+                borderType = Core.BORDER_REPLICATE; //replicate     aaaaaa|abcdefgh|hhhhhhh
+                break;
+            case 3:
+                borderType = Core.BORDER_CONSTANT; //constant       iiiiii|abcdefgh|iiiiii
+                break;
+            case 4:
+                borderType=4; //leave original value (bez dodawania kolumn i wierszy pomocniczych)
+                break;
+            default:
+                borderType = Core.BORDER_DEFAULT;//BORDER_REFLECT_101 gfedcb|abcdefgh|gfedcba
+        }
+
+        switch(choiceOfSmoothingType) {
             case 0: //uśrednianie
-                Imgproc.blur(src,dst,kSize,anchor,BORDER_DEFAULT);
+                if(borderType!=3 || borderType!=4)
+                    Imgproc.blur(src,dst,kSize,anchor,borderType);
+                else if (borderType==3) //BORDER_CONSTANT
+                    dst=blurConstant(src,ksize,value);
+                else {//leave original value
+                    Imgproc.blur(src, dst, kSize);
+                    putOriginalValue(src,dst,ksize);
+                }
                 break;
+
             case 1: //uśrednianie K-pudełkowe
+                int sum = ksize*ksize + (K-1);
+                //zainicjowanie macierzy jedynkami (można użyć Mat m = Mat::ones(2, 2, CV_8UC3), ale to == Mat(2, 2, CV_8UC3, 1); // OpenCV replaces `1` with `Scalar(1,0,0)`)
+                Mat kernel_init=new Mat(ksize,ksize,src.type(),new Scalar(1,1,1));
+                //wstawienie wartości K
+                int[] data = {K,K,K}; //RGB (lub BGR)
+                kernel_init.put(ksize/2,ksize/2, data);
+                //normalizacja https://docs.opencv.org/3.4/d4/dbd/tutorial_filter_2d.html
+                Mat kernel = new Mat();
+                Core.multiply(kernel_init, new Scalar(1/(double)sum, 1/(double)sum, 1/(double)sum), kernel); //alternatywnie: https://www.tutorialspoint.com/opencv/opencv_filter2d.htm
+
+                //Imgproc.filter2D(Mat src, Mat dst, int ddepth, Mat kernel, Point anchor, double delta, int borderType)
+                if (borderType!=3 || borderType !=4)
+                    Imgproc.filter2D(src,dst,-1,kernel,anchor,0,borderType);
+                else if (borderType==3) //BORDER_CONSTANT
+                    dst=filter2dConstant(src,ksize,value,kernel);
+                else { //leave original value
+                    Imgproc.filter2D(src,dst,-1,kernel); //filtrowanie z domyślnym type_border
+                    putOriginalValue(src,dst,ksize);
+                }
                 break;
+
             case 2: //filtr gaussowski
-                Imgproc.GaussianBlur(src,dst,kSize,0); //sigmaX-Gaussian kernel standard deviation in X direction
+                if (borderType!=3 || borderType !=4)
+                    Imgproc.GaussianBlur(src,dst,kSize,0,0, borderType); //sigmaX-Gaussian kernel standard deviation in X direction
+                else if (borderType==3) //BORDER_CONSTANT
+                    dst=gaussBlurConstant(src,ksize,value);
+                else {
+                    Imgproc.GaussianBlur(src,dst,kSize,0); //filtrowanie z domyślnym type_border
+                    putOriginalValue(src,dst,ksize);
+                }
                 break;
         }
 
@@ -521,6 +668,7 @@ public class Functionality {
         WritableImage writableImage = SwingFXUtils.toFXImage((BufferedImage)img, null);
         return writableImage;
     }
+
     public static Image laplasjan(Mat src, int size, int choice) {
         Mat dst = new Mat(src.rows(), src.cols(), src.type());
         Point anchor = new Point(-1,-1);

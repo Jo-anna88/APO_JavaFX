@@ -2,14 +2,13 @@
 
 <?import com.jfoenix.controls.JFXButton?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.ChoiceBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
+<?import javafx.scene.image.ImageView?>
 <AnchorPane prefHeight="400.0" prefWidth="600.0" stylesheets="@myAppStyle.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Smoothing">
     <children>
         <VBox prefHeight="700.0" prefWidth="940.0">
@@ -26,12 +25,7 @@
                 <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="940.0">
                     <children>
                         <Label alignment="CENTER" prefHeight="50.0" prefWidth="455.0" text="Original Image" />
-                        <Label alignment="CENTER" prefHeight="50.0" prefWidth="360.0" text="                          Image after Smoothing" />
-                        <JFXButton fx:id="saveButton" onAction="#saveDestinationImage" prefHeight="46.0" prefWidth="100.0" text="Save">
-                            <HBox.margin>
-                                <Insets bottom="5.0" right="5.0" top="5.0" />
-                            </HBox.margin>
-                        </JFXButton>
+                        <Label alignment="CENTER" prefHeight="50.0" prefWidth="455.0" text="Image after Smoothing" />
                     </children>
                <padding>
                   <Insets left="10.0" right="10.0" />
@@ -39,20 +33,36 @@
                 </HBox>
             <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="20.0">
                <children>
-                  <Label text="Smoothing method:" />
-                  <ChoiceBox fx:id="choiceBox" prefHeight="25.0" prefWidth="250.0" />
-                  <Label fx:id="filtr" prefHeight="81.0" prefWidth="200.0" />
-                  <AnchorPane fx:id="anchorPane" prefHeight="95.0" prefWidth="176.0" visible="false">
+                  <AnchorPane prefHeight="95.0" prefWidth="380.0">
                      <children>
-                        <TextField fx:id="getK" layoutX="31.0" layoutY="35.0" prefHeight="25.0" prefWidth="53.0" />
-                        <Label layoutX="9.0" layoutY="39.0" text="K:" />
+                        <Label layoutX="7.0" layoutY="6.0" text="Smoothing method:" />
+                        <ChoiceBox fx:id="choiceBox1" layoutX="130.0" layoutY="2.0" prefHeight="25.0" prefWidth="250.0" />
+                        <Label alignment="CENTER_RIGHT" layoutX="7.0" layoutY="48.0" prefHeight="25.0" prefWidth="106.0" text="Border Pixels:" />
+                        <ChoiceBox fx:id="choiceBox2" layoutX="130.0" layoutY="48.0" prefHeight="25.0" prefWidth="250.0" />
                      </children>
                   </AnchorPane>
-                  <JFXButton fx:id="acceptButton" onAction="#acceptSettings" prefHeight="46.0" prefWidth="100.0" text="Accept">
-                     <HBox.margin>
-                        <Insets />
-                     </HBox.margin>
-                  </JFXButton>
+                  <AnchorPane prefHeight="95.0" prefWidth="110.0">
+                     <children>
+                        <Label fx:id="valLabel" layoutX="4.0" layoutY="52.0" text="Value:" visible="false" />
+                        <Spinner fx:id="valSpinner" editable="true" layoutX="47.0" layoutY="48.0" prefHeight="25.0" prefWidth="60.0" visible="false">
+                           <valueFactory>
+                              <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="0" max="255" min="0" />
+                           </valueFactory>
+                        </Spinner>
+                        <Label fx:id="kLabel" alignment="CENTER_RIGHT" layoutX="4.0" layoutY="6.0" prefWidth="33.0" text="K:" visible="false" />
+                        <Spinner fx:id="kSpinner" editable="true" layoutX="47.0" layoutY="2.0" prefHeight="25.0" prefWidth="60.0" visible="false">
+                           <valueFactory>
+                              <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="0" max="255" min="0" />
+                           </valueFactory>
+                        </Spinner>
+                     </children>
+                  </AnchorPane>
+                  <Label fx:id="filtr" prefHeight="81.0" prefWidth="260.0" />
+                        <JFXButton fx:id="saveButton" onAction="#saveDestinationImage" prefHeight="46.0" prefWidth="100.0" text="Save">
+                            <HBox.margin>
+                                <Insets bottom="5.0" right="5.0" top="5.0" />
+                            </HBox.margin>
+                        </JFXButton>
                </children>
             </HBox>
             </children>
