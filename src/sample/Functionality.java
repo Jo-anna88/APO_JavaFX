@@ -555,7 +555,7 @@ public class Functionality {
         Mat bufImage = new Mat(src.rows() + border * 2, src.cols() + border * 2, src.type()); //matryca dla obrazu źródłowego powiększonego o brzeg
         Mat dstPlus = new Mat(bufImage.rows(), bufImage.cols(), bufImage.type()); //matryca dla obrazu wynikowego po filtracji medianowej na bufImage
         Core.copyMakeBorder(src, bufImage, border, border, border, border, BORDER_CONSTANT, new Scalar(value, value, value)); //Scalar (B, G, R (,alpha))
-        Imgproc.filter2D(bufImage, dstPlus,-1,kernel);
+        Imgproc.filter2D(bufImage, dstPlus,-1,kernel);//?
         Rect roi = new Rect(border,border,src.cols(),src.rows()); //x_start, y_start, width, height
         Mat dst2 = new Mat(dstPlus,roi);
         return dst2;
@@ -612,7 +612,7 @@ public class Functionality {
                 borderType = Core.BORDER_CONSTANT; //constant       iiiiii|abcdefgh|iiiiii
                 break;
             case 4:
-                borderType=4; //leave original value (bez dodawania kolumn i wierszy pomocniczych)
+                borderType=10; //leave original value (bez dodawania kolumn i wierszy pomocniczych)
                 break;
             default:
                 borderType = Core.BORDER_DEFAULT;//BORDER_REFLECT_101 gfedcb|abcdefgh|gfedcba
@@ -620,48 +620,63 @@ public class Functionality {
 
         switch(choiceOfSmoothingType) {
             case 0: //uśrednianie
-                if(borderType!=3 || borderType!=4)
-                    Imgproc.blur(src,dst,kSize,anchor,borderType);
-                else if (borderType==3) //BORDER_CONSTANT
-                    dst=blurConstant(src,ksize,value);
-                else {//leave original value
+                if(borderType==10) {//leave original value //choice:4
                     Imgproc.blur(src, dst, kSize);
                     putOriginalValue(src,dst,ksize);
                 }
+                else if (borderType==BORDER_CONSTANT) //choice:3
+                    dst=blurConstant(src,ksize,value);
+                else
+                    Imgproc.blur(src,dst,kSize,anchor,borderType);
                 break;
 
             case 1: //uśrednianie K-pudełkowe
                 int sum = ksize*ksize + (K-1);
                 //zainicjowanie macierzy jedynkami (można użyć Mat m = Mat::ones(2, 2, CV_8UC3), ale to == Mat(2, 2, CV_8UC3, 1); // OpenCV replaces `1` with `Scalar(1,0,0)`)
-                Mat kernel_init=new Mat(ksize,ksize,src.type(),new Scalar(1,1,1));
+                Mat kernel_init=Mat.ones(kSize,CvType.CV_32F);
                 //wstawienie wartości K
-                int[] data = {K,K,K}; //RGB (lub BGR)
-                kernel_init.put(ksize/2,ksize/2, data);
+                kernel_init.put(ksize/2,ksize/2, K);
+
                 //normalizacja https://docs.opencv.org/3.4/d4/dbd/tutorial_filter_2d.html
                 Mat kernel = new Mat();
-                Core.multiply(kernel_init, new Scalar(1/(double)sum, 1/(double)sum, 1/(double)sum), kernel); //alternatywnie: https://www.tutorialspoint.com/opencv/opencv_filter2d.htm
+                Core.multiply(kernel_init, new Scalar(1/(double)sum), kernel); //alternatywnie: https://www.tutorialspoint.com/opencv/opencv_filter2d.htm
 
                 //Imgproc.filter2D(Mat src, Mat dst, int ddepth, Mat kernel, Point anchor, double delta, int borderType)
-                if (borderType!=3 || borderType !=4)
-                    Imgproc.filter2D(src,dst,-1,kernel,anchor,0,borderType);
-                else if (borderType==3) //BORDER_CONSTANT
-                    dst=filter2dConstant(src,ksize,value,kernel);
-                else { //leave original value
+                if(borderType==10) { //leave original value
                     Imgproc.filter2D(src,dst,-1,kernel); //filtrowanie z domyślnym type_border
                     putOriginalValue(src,dst,ksize);
                 }
+                else if (borderType==BORDER_CONSTANT) //choice:3
+                    dst=filter2dConstant(src,ksize,value,kernel);//?
+                else
+                    Imgproc.filter2D(src,dst,-1,kernel,anchor,0, borderType);
+
                 break;
 
             case 2: //filtr gaussowski
-                if (borderType!=3 || borderType !=4)
-                    Imgproc.GaussianBlur(src,dst,kSize,0,0, borderType); //sigmaX-Gaussian kernel standard deviation in X direction
-                else if (borderType==3) //BORDER_CONSTANT
-                    dst=gaussBlurConstant(src,ksize,value);
-                else {
+                if (borderType==10) { //leave original value
                     Imgproc.GaussianBlur(src,dst,kSize,0); //filtrowanie z domyślnym type_border
                     putOriginalValue(src,dst,ksize);
                 }
+                else if (borderType==BORDER_CONSTANT) //BORDER_CONSTANT
+                    dst=gaussBlurConstant(src,ksize,value);
+                else
+                    Imgproc.GaussianBlur(src,dst,kSize,0,0, borderType); //sigmaX-Gaussian kernel standard deviation in X direction
                 break;
+        }
+        System.out.println("Mat src:");
+        System.out.println("cols:"+src.cols()+", rows:"+src.rows());
+        System.out.println("Mat dst:");
+        System.out.println("cols:"+dst.cols()+", rows:"+dst.rows());
+        for (int i=0; i<dst.rows();i++) {
+            for (int j=0; j<dst.cols(); j++) {
+                double[] m = dst.get(i,j);
+                for (double x: m) {
+                    System.out.print(x+", ");
+                }
+                System.out.print("\t");
+            }
+            System.out.println();
         }
 
         java.awt.Image img = HighGui.toBufferedImage(dst);

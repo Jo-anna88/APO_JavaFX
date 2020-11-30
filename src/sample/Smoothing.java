@@ -34,6 +34,10 @@ public class Smoothing {
     @FXML
     private ChoiceBox choiceBox2; //pobiera sposób rozwiązania problemu wartości skrajnych pikseli (marginesów)
     private int choiceOfBorderType; //indeks dot. wuboru z choicebox2
+    @FXML
+    private ChoiceBox choiceBox3; //pobiera rozmiar filtra
+    String[] ksizeChoice = {"3", "5", "7", "9"};
+    private int size=3; //rozmiar macierzy filtra
 
     @FXML
     private Label valLabel;
@@ -43,6 +47,8 @@ public class Smoothing {
 
     @FXML
     private Label kLabel;
+
+//  https://en.wikipedia.org/wiki/Box_blur - uśrednianie K-pudełkowe
     @FXML
     private Spinner kSpinner; //do pobrania wartości K (wagi dla środkowego piksela filtra)
     private int K;
@@ -50,14 +56,9 @@ public class Smoothing {
     @FXML
     private Label filtr; //pokazuje macierz dla wybranego filtra
     private String url; //przechowuje url do obrazka macierzy wstawianego do ww. Label filtr
-    private int size=3; //rozmiar macierzy filtra
-
 
     @FXML
     public void initialize() {
-        //value=0;
-        //K=1;
-
         originalImage = Controller.returnSelectedImage();
         imageViewL.setImage(originalImage);
         try {
@@ -69,7 +70,17 @@ public class Smoothing {
         } catch (MalformedURLException | URISyntaxException e) {
             System.out.println("musisz pracować na zapisanym pliku");
         }
-        choiceBox1.setItems(FXCollections.observableArrayList("uśrednianie", "uśrednianie K-pudełkowe", "gaussowskie"));
+        /////////////ustawienie startowego obrazu wynikowego - przy ustawieniach domyślnych///////////////
+        destinationImage = Functionality.smooth(src,size,choiceOfSmoothingType,choiceOfBorderType,value,K);
+        imageViewR.setImage(destinationImage);
+        try {
+            url =  new File("./resources/usrednianie.PNG").toURI().toURL().toString();
+        } catch (MalformedURLException e) {
+        }
+
+        ////////ustawienia dla choicebox i spinner'ów - obrazy wynikowe dla ustawień wprowadzonych przez użytkownika/////
+        choiceBox1.setItems(FXCollections.observableArrayList("Averaging", "Box Blurring", "Gaussian Blurring"));
+        choiceBox1.setValue("Averaging");
         choiceBox1.getSelectionModel().selectedIndexProperty().addListener(
                 (observable, oldVal, newVal) -> {
                     choiceOfSmoothingType=newVal.intValue();
@@ -128,6 +139,16 @@ public class Smoothing {
                     imageViewR.setImage(destinationImage);
                 });
 
+        //to get size:
+        choiceBox3.setItems(FXCollections.observableArrayList(ksizeChoice));
+        choiceBox3.setValue("3");
+        choiceBox3.getSelectionModel().selectedIndexProperty().addListener(
+                (observable, old_val, new_val) -> {
+                    size = Integer.parseInt(ksizeChoice[new_val.intValue()]);
+                    destinationImage = Functionality.smooth(src,size,choiceOfSmoothingType,choiceOfBorderType,value,K);
+                    imageViewR.setImage(destinationImage);
+                });
+
         //to get constant value:
         valSpinner.valueProperty().addListener((ChangeListener<Integer>) (obs, oldValue, newValue) -> {
             value=newValue;
@@ -140,7 +161,6 @@ public class Smoothing {
         kSpinner.valueProperty().addListener((ChangeListener<Integer>) (obs, oldValue, newValue) -> {
             K=newValue;
             destinationImage = Functionality.smooth(src,size,choiceOfSmoothingType,choiceOfBorderType,value,K);
-            System.out.println("utworzono destination image");
             imageViewR.setImage(destinationImage);
         });
     }
