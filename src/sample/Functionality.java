@@ -600,23 +600,7 @@ public class Functionality {
         Mat dst = new Mat(src.rows(), src.cols(), src.type());
         Point anchor = new Point(-1,-1);
         Size kSize = new Size(ksize,ksize);
-        int borderType;
-        switch (choiceOfBorderType) {
-            case 1:
-                borderType = Core.BORDER_REFLECT; //reflect         fedcba|abcdefgh|hgfedcb
-                break;
-            case 2:
-                borderType = Core.BORDER_REPLICATE; //replicate     aaaaaa|abcdefgh|hhhhhhh
-                break;
-            case 3:
-                borderType = Core.BORDER_CONSTANT; //constant       iiiiii|abcdefgh|iiiiii
-                break;
-            case 4:
-                borderType=10; //leave original value (bez dodawania kolumn i wierszy pomocniczych)
-                break;
-            default:
-                borderType = Core.BORDER_DEFAULT;//BORDER_REFLECT_101 gfedcb|abcdefgh|gfedcba
-        }
+        int borderType = returnBorderType(choiceOfBorderType);
 
         switch(choiceOfSmoothingType) {
             case 0: //uśrednianie
@@ -664,36 +648,85 @@ public class Functionality {
                     Imgproc.GaussianBlur(src,dst,kSize,0,0, borderType); //sigmaX-Gaussian kernel standard deviation in X direction
                 break;
         }
-        System.out.println("Mat src:");
-        System.out.println("cols:"+src.cols()+", rows:"+src.rows());
-        System.out.println("Mat dst:");
-        System.out.println("cols:"+dst.cols()+", rows:"+dst.rows());
-        for (int i=0; i<dst.rows();i++) {
-            for (int j=0; j<dst.cols(); j++) {
-                double[] m = dst.get(i,j);
-                for (double x: m) {
-                    System.out.print(x+", ");
-                }
-                System.out.print("\t");
-            }
-            System.out.println();
+
+        java.awt.Image img = HighGui.toBufferedImage(dst);
+        WritableImage writableImage = SwingFXUtils.toFXImage((BufferedImage)img, null);
+        return writableImage;
+    }
+
+    public static int returnBorderType (int choice) { //uwaga! nie dla mediany!!
+        int borderType;
+        switch (choice) {
+            case 1:
+                borderType = Core.BORDER_REFLECT; //reflect         fedcba|abcdefgh|hgfedcb
+                break;
+            case 2:
+                borderType = Core.BORDER_REPLICATE; //replicate     aaaaaa|abcdefgh|hhhhhhh
+                break;
+            case 3:
+                borderType = Core.BORDER_CONSTANT; //constant       iiiiii|abcdefgh|iiiiii
+                break;
+            case 4:
+                borderType=10; //leave original value (bez dodawania kolumn i wierszy pomocniczych)
+                break;
+            default:
+                borderType = Core.BORDER_DEFAULT;//BORDER_REFLECT_101 gfedcb|abcdefgh|gfedcba
+        }
+        return borderType;
+    }
+
+    public static Image laplasjan(Mat src, int matrixNr, int choice, int value) {
+        int borderType = returnBorderType(choice);
+        Point anchor = new Point(-1,-1);
+
+        Mat kernel;
+        if (matrixNr==1) {
+            int[]data={0,-1,0,-1,4,-1,0,-1,0};
+            kernel = createKernel(data);
+        } else if (matrixNr==2) {
+            int[]data={-1,-1,-1,-1,8,-1,-1,-1,-1};
+            kernel = createKernel(data);
+        } else {
+            int[]data={1,-2,1,-2,4,-2,1,-2,1};
+            kernel = createKernel(data);
         }
 
-        java.awt.Image img = HighGui.toBufferedImage(dst);
-        WritableImage writableImage = SwingFXUtils.toFXImage((BufferedImage)img, null);
-        return writableImage;
-    }
-
-    public static Image laplasjan(Mat src, int size, int choice) {
+        //0.przechowanie typu obrazu źródłowego
+        int srcType = src.type();
+        //1.konwersja obrazu źródłowego do formatu uwzględniającego liczby z zakresu {-4080, 4080} <- możliwe min i max
+        src.convertTo(src,CvType.CV_16S); //nadal pozostajemy przy 3-4 kanałach (takiej ilości, jaka była)
+        //2.utworzenie macierzy wyjściowej dla obrazu po filtracji
         Mat dst = new Mat(src.rows(), src.cols(), src.type());
-        Point anchor = new Point(-1,-1);
-        Imgproc.Laplacian(src,dst,-1,size);
+        if (borderType==10) {//leave original values
+            Imgproc.filter2D(src,dst,-1,kernel); //filtrowanie z domyślnym type_border
+            putOriginalValue(src,dst,3);
+        }
+        else if (borderType==BORDER_CONSTANT) {
+            dst=filter2dConstant(src,3,value,kernel);
+        }
+        else {Imgproc.filter2D(src,dst,-1,kernel,anchor,0,borderType);}
+        //3.normalizacja: min, max --> 0-255
+        Core.normalize(dst, dst, 0, 255, Core.NORM_MINMAX,-1);
+        //4.konwersja "powrotna"
+        src.convertTo(src,srcType);
+        dst.convertTo(dst,srcType);
+        //5.przygotowanie obrazu wyjściowego
         java.awt.Image img = HighGui.toBufferedImage(dst);
         WritableImage writableImage = SwingFXUtils.toFXImage((BufferedImage)img, null);
         return writableImage;
     }
 
-
+    public static Mat createKernel (int[] data) {
+        Mat kernel = new Mat(3,3,CvType.CV_32F);
+        int k=0;
+        for(int i=0; i<kernel.rows(); i++) {
+            for (int j=0; j<kernel.cols(); j++) {
+                kernel.put(i,j,data[k]);
+                k++;
+            }
+        }
+        return kernel;
+    }
     //////////////////////////////Functionality connecting with files//////////////////////////////////////////////////////
     public static String getImageName(Image img) {
         String fname = img.getUrl(); //np.C:/.../zdjecie.jpg

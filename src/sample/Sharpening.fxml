@@ -2,18 +2,13 @@
 
 <?import com.jfoenix.controls.JFXButton?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.ChoiceBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Spinner?>
-<?import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory?>
-<?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" stylesheets="@myAppStyle.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Sharpening">
+<AnchorPane prefHeight="400.0" prefWidth="940.0" stylesheets="@myAppStyle.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Sharpening">
     <children>
         <VBox prefHeight="700.0" prefWidth="940.0">
             <children>
@@ -29,20 +24,15 @@
                 <HBox alignment="CENTER_LEFT" prefHeight="80.0" prefWidth="940.0">
                     <children>
                         <Label alignment="CENTER" prefHeight="50.0" prefWidth="455.0" text="Original Image" />
-                        <Label alignment="CENTER" prefHeight="50.0" prefWidth="360.0" text="                          Image after Smoothing" />
-                        <JFXButton fx:id="saveButton" onAction="#saveDestinationImage" prefHeight="46.0" prefWidth="100.0" text="Save">
-                            <HBox.margin>
-                                <Insets bottom="5.0" right="5.0" top="5.0" />
-                            </HBox.margin>
-                        </JFXButton>
+                        <Label alignment="CENTER" prefHeight="50.0" prefWidth="455.0" text="Image after Smoothing" />
                     </children>
                     <padding>
                         <Insets left="10.0" right="10.0" />
                     </padding>
                 </HBox>
-                <HBox alignment="CENTER" prefHeight="120.0" prefWidth="200.0" spacing="20.0">
+                <HBox alignment="CENTER" minWidth="-Infinity" prefHeight="120.0" prefWidth="940.0" spacing="20.0">
                     <children>
-                        <Label text="Choose Laplacian mask:" />
+                        <Label prefWidth="126.0" text="Choose Laplacian mask:" />
                   <ToggleButton fx:id="toggleBtn1" mnemonicParsing="false" prefHeight="100.0" prefWidth="100.0">
                      <toggleGroup>
                         <ToggleGroup fx:id="ToggleGroup" />
@@ -54,17 +44,17 @@
                      <children>
                         <Label alignment="CENTER" layoutX="87.0" layoutY="14.0" prefHeight="25.0" prefWidth="106.0" text="Border Pixels:" />
                         <ChoiceBox fx:id="choiceBox" layoutX="15.0" layoutY="45.0" prefHeight="25.0" prefWidth="250.0" />
-                        <Label fx:id="valueLabel" layoutX="93.0" layoutY="80.0" text="Value:" visible="false" />
-                        <Spinner fx:id="spinner" editable="true" layoutX="133.0" layoutY="76.0" prefHeight="25.0" prefWidth="60.0" visible="false">
+                        <Label fx:id="valLabel" layoutX="93.0" layoutY="80.0" text="Value:" visible="false" />
+                        <Spinner fx:id="valSpinner" editable="true" layoutX="133.0" layoutY="76.0" prefHeight="25.0" prefWidth="60.0" visible="false">
                            <valueFactory>
                               <SpinnerValueFactory.IntegerSpinnerValueFactory amountToStepBy="1" initialValue="0" max="255" min="0" />
                            </valueFactory>
                         </Spinner>
                      </children>
                   </AnchorPane>
-                        <JFXButton fx:id="acceptButton" onAction="#acceptSettings" prefHeight="46.0" prefWidth="100.0" text="Accept">
+                        <JFXButton fx:id="saveButton" onAction="#saveDestinationImage" prefHeight="46.0" prefWidth="100.0" text="Save">
                             <HBox.margin>
-                                <Insets />
+                                <Insets bottom="5.0" right="5.0" top="5.0" />
                             </HBox.margin>
                         </JFXButton>
                     </children>

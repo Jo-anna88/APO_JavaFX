@@ -25,3 +25,5 @@
     -fx-background-color: -fx-primary;
     -fx-text-fill: white;
 }
+
+.choice-box .menu-item > .label { -fx-text-fill: white; }
