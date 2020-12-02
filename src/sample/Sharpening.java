@@ -16,6 +16,9 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import static org.opencv.imgproc.Imgproc.COLOR_BGR2GRAY;
+import static org.opencv.imgproc.Imgproc.cvtColor;
+
 public class Sharpening {
     private Mat src; //originalImage
     //private Mat dst; //destinationImage
@@ -62,7 +65,8 @@ public class Sharpening {
         try {
             File f = new File(new URL(originalImage.getUrl()).toURI());
             String filepath = f.getAbsolutePath();
-            src = Imgcodecs.imread(filepath, Imgcodecs.IMREAD_GRAYSCALE);
+            src = Imgcodecs.imread(filepath);
+            cvtColor(src,src,COLOR_BGR2GRAY);
         } catch (MalformedURLException | URISyntaxException e) {
             System.out.println("musisz pracować na zapisanym pliku");
         }

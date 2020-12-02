@@ -15,6 +15,9 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import static org.opencv.imgproc.Imgproc.COLOR_BGR2GRAY;
+import static org.opencv.imgproc.Imgproc.cvtColor;
+
 public class Prewitt {
     private Mat src; //originalImage
     //private Mat dst; //destinationImage
@@ -78,7 +81,8 @@ public class Prewitt {
         try {
             File f = new File(new URL(originalImage.getUrl()).toURI());
             String filepath = f.getAbsolutePath();
-            //src = Imgcodecs.imread(filepath, Imgcodecs.IMREAD_GRAYSCALE);
+            src = Imgcodecs.imread(filepath);
+            cvtColor(src,src,COLOR_BGR2GRAY);
         } catch (MalformedURLException | URISyntaxException e) {
             System.out.println("musisz pracować na zapisanym pliku");
         }
@@ -114,8 +118,8 @@ public class Prewitt {
         group.selectedToggleProperty().addListener(
                 (observable, old_val, new_val) -> {
                     matrixNr = (int) new_val.getUserData(); //uwaga! nr-y to 1,2,3,... (numeruje od 1!)
-                    //destinationImage = Functionality.laplasjan(src,matrixNr,choice,value);
-                    //imageViewR.setImage(destinationImage);
+                    destinationImage = Functionality.prewitt(src,matrixNr,choice,value);
+                    imageViewR.setImage(destinationImage);
                 });
         //to get border type:
         choiceBox.setItems(FXCollections.observableArrayList("default", "reflect", "replicate", "constant", "leave original values"));
@@ -131,14 +135,14 @@ public class Prewitt {
                         valSpinner.setVisible(false);
                     }
                     choice=newVal.intValue();
-                    //destinationImage = Functionality.laplasjan(src,matrixNr,choice,value);
-                    //imageViewR.setImage(destinationImage);
+                    destinationImage = Functionality.prewitt(src,matrixNr,choice,value);
+                    imageViewR.setImage(destinationImage);
                 });
         //to get constant value:
         valSpinner.valueProperty().addListener((ChangeListener<Integer>) (obs, oldValue, newValue) -> {
             value=newValue;
-            //destinationImage = Functionality.laplasjan(src,matrixNr,choice,value);
-            //imageViewR.setImage(destinationImage);
+            destinationImage = Functionality.prewitt(src,matrixNr,choice,value);
+            imageViewR.setImage(destinationImage);
         });
     }
 

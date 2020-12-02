@@ -255,6 +255,22 @@ public class Controller {
         }
 
     }
+    ////////////////////////////////////////////////
+    @FXML
+    void toGrayscale(ActionEvent event) {
+        Image img = returnSelectedImage();
+        Image dst = Functionality.rgbToGrayscale(img);
+        ImageView nImgView = new ImageView(dst);
+        Tab tab0;
+        try {
+        tab0 = new Tab(Functionality.getNameWithoutExt(img) + "_grayscale", nImgView);} //zdjecie.jpg -> zdjecie_stretched.jpg
+            catch(NullPointerException e){
+                Tab selectedTab = sTabPane.getSelectionModel().getSelectedItem(); //pobiera wybraną zakładkę (tab)
+                tab0 = new Tab(selectedTab.getText()+"_grayscale",nImgView);
+            }
+        tabPane.getTabs().add(tab0);
+        tabPane.getSelectionModel().select(tabPane.getTabs().size() - 1);
+    }
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

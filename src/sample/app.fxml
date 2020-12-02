@@ -36,6 +36,7 @@
                                 <accelerator>
                                     <KeyCodeCombination alt="UP" code="D" control="UP" meta="UP" shift="UP" shortcut="DOWN" />
                                 </accelerator></MenuItem>
+                            <MenuItem mnemonicParsing="false" onAction="#toGrayscale" text="Grayscale" />
                         </items>
                     </Menu>
                     <Menu mnemonicParsing="false" text="Tools">

@@ -508,7 +508,7 @@ public class Functionality {
         //1. tworzymy obraz uzupełniony o brzeg (bufImage) dla danego obrazu (src): powiększony z każdej strony o x pikseli (border),
         //   wykorzystując daną (wbudowaną) metodę uzupełniania wartości dla tych pikseli (uwaga! - nie dotyczy opcji nr 4!)
         //int top, bottom, left, right; ==ksize-2
-        int border = ksize-2;
+        int border = ksize/2;
 
         if (borderType!=4) {
             Mat bufImage = new Mat(src.rows()+border*2, src.cols()+border*2, src.type() ); //matryca dla obrazu źródłowego powiększonego o brzeg
@@ -540,7 +540,7 @@ public class Functionality {
     }
 
     public static Mat blurConstant (Mat src, int ksize, int value) { //uśrednianie dla BORDER_CONSTANT
-        int border = ksize - 2;
+        int border = ksize/2;
         Mat bufImage = new Mat(src.rows() + border * 2, src.cols() + border * 2, src.type()); //matryca dla obrazu źródłowego powiększonego o brzeg
         Mat dstPlus = new Mat(bufImage.rows(), bufImage.cols(), bufImage.type()); //matryca dla obrazu wynikowego po filtracji medianowej na bufImage
         Core.copyMakeBorder(src, bufImage, border, border, border, border, BORDER_CONSTANT, new Scalar(value, value, value)); //Scalar (B, G, R (,alpha))
@@ -551,7 +551,7 @@ public class Functionality {
     }
 
     public static Mat filter2dConstant (Mat src, int ksize, int value, Mat kernel) {
-        int border = ksize - 2;
+        int border = ksize/2;
         Mat bufImage = new Mat(src.rows() + border * 2, src.cols() + border * 2, src.type()); //matryca dla obrazu źródłowego powiększonego o brzeg
         Mat dstPlus = new Mat(bufImage.rows(), bufImage.cols(), bufImage.type()); //matryca dla obrazu wynikowego po filtracji medianowej na bufImage
         Core.copyMakeBorder(src, bufImage, border, border, border, border, BORDER_CONSTANT, new Scalar(value, value, value)); //Scalar (B, G, R (,alpha))
@@ -562,7 +562,7 @@ public class Functionality {
     }
 
     public static Mat gaussBlurConstant (Mat src, int ksize, int value) {
-        int border = ksize - 2;
+        int border = ksize/2;
         Mat bufImage = new Mat(src.rows() + border * 2, src.cols() + border * 2, src.type()); //matryca dla obrazu źródłowego powiększonego o brzeg
         Mat dstPlus = new Mat(bufImage.rows(), bufImage.cols(), bufImage.type()); //matryca dla obrazu wynikowego po filtracji medianowej na bufImage
         Core.copyMakeBorder(src, bufImage, border, border, border, border, BORDER_CONSTANT, new Scalar(value, value, value)); //Scalar (B, G, R (,alpha))
@@ -573,7 +573,7 @@ public class Functionality {
     }
 
     public static void putOriginalValue (Mat src, Mat dst, int ksize) {
-        int border = ksize-2;
+        int border = ksize/2;
         int height = src.rows();
         int weight = src.cols();
         for (int i=0; i<height; i++) {
@@ -675,10 +675,75 @@ public class Functionality {
         return borderType;
     }
 
+    public static Image prewitt(Mat src, int matrixNr, int choice, int value) {
+        int borderType = returnBorderType(choice);
+        Point anchor = new Point(-1, -1);
+
+        Mat kernel=null;
+        switch (matrixNr) {
+            case 1: //N
+                int[] data1 = {1,1,1,1,-2,1,-1,-1,-1};
+                kernel = createKernel(data1);
+                break;
+            case 2: //NE
+                int[] data2 = {1,1,1,-1,-2,1,-1,-1,1};
+                kernel = createKernel(data2);
+                break;
+            case 3: //E
+                int[] data3 = {-1,1,1,-1,-2,1,-1,1,1};
+                kernel = createKernel(data3);
+                break;
+            case 4: //SE
+                int[] data4 = {-1,-1,1,-1,-2,1,1,1,1};
+                kernel = createKernel(data4);
+                break;
+            case 5: //S
+                int[] data5 = {-1,-1,-1,1,-2,1,1,1,1};
+                kernel = createKernel(data5);
+                break;
+            case 6: //SW
+                int[] data6 = {1,-1,-1,1,-2,-1,1,1,1};
+                kernel = createKernel(data6);
+                break;
+            case 7: //W
+                int[] data7 = {1,1,-1,1,-2,-1,1,1,-1};
+                kernel = createKernel(data7);
+                break;
+            case 8: //NW
+                int[] data8 = {1,1,1,1,-2,-1,1,-1,-1};
+                kernel = createKernel(data8);
+                break;
+        }
+        //0.przechowanie typu obrazu źródłowego
+        int srcType = src.type();
+        //1.konwersja obrazu źródłowego do formatu uwzględniającego liczby z zakresu {-4080, 4080} <- możliwe min i max
+        src.convertTo(src,CvType.CV_16S); //nadal pozostajemy przy 3-4 kanałach (takiej ilości, jaka była)
+        //2.utworzenie macierzy wyjściowej dla obrazu po filtracji
+        Mat dst = new Mat(src.rows(), src.cols(), src.type());
+        if (borderType==10) {//leave original values
+            Imgproc.filter2D(src,dst,-1,kernel); //filtrowanie z domyślnym type_border
+            //putOriginalValue(src,dst,3);
+        }
+        else if (borderType==BORDER_CONSTANT) {
+            dst=filter2dConstant(src,3,value,kernel);
+        }
+        else {Imgproc.filter2D(src,dst,-1,kernel,anchor,0,borderType);}
+        //3.normalizacja: min, max --> 0-255
+        Core.normalize(dst, dst, 0, 255, Core.NORM_MINMAX,-1);
+        //4.konwersja "powrotna" i dokończenie opcji "leave orig.val."
+        src.convertTo(src,srcType);
+        dst.convertTo(dst,srcType);
+        if (borderType==10) {putOriginalValue(src,dst,3);
+        printMat(dst);}
+        //5.przygotowanie obrazu wyjściowego
+        java.awt.Image img = HighGui.toBufferedImage(dst);
+        WritableImage writableImage = SwingFXUtils.toFXImage((BufferedImage)img, null);
+        return writableImage;
+    }
+
     public static Image laplasjan(Mat src, int matrixNr, int choice, int value) {
         int borderType = returnBorderType(choice);
         Point anchor = new Point(-1,-1);
-
         Mat kernel;
         if (matrixNr==1) {
             int[]data={0,-1,0,-1,4,-1,0,-1,0};
@@ -699,7 +764,7 @@ public class Functionality {
         Mat dst = new Mat(src.rows(), src.cols(), src.type());
         if (borderType==10) {//leave original values
             Imgproc.filter2D(src,dst,-1,kernel); //filtrowanie z domyślnym type_border
-            putOriginalValue(src,dst,3);
+            //putOriginalValue(src,dst,3);
         }
         else if (borderType==BORDER_CONSTANT) {
             dst=filter2dConstant(src,3,value,kernel);
@@ -710,6 +775,11 @@ public class Functionality {
         //4.konwersja "powrotna"
         src.convertTo(src,srcType);
         dst.convertTo(dst,srcType);
+        if (borderType==10) {
+            putOriginalValue(src, dst, 3);
+            printMat(src);
+            printMat(dst);
+        }
         //5.przygotowanie obrazu wyjściowego
         java.awt.Image img = HighGui.toBufferedImage(dst);
         WritableImage writableImage = SwingFXUtils.toFXImage((BufferedImage)img, null);
@@ -727,6 +797,20 @@ public class Functionality {
         }
         return kernel;
     }
+
+    public static void printMat (Mat mat) {
+        for (int i=0; i<mat.rows();i++) {
+            for (int j=0; j<mat.cols(); j++) {
+                double[] m = mat.get(i,j);
+                for (double x: m) {
+                    System.out.print(x+", ");
+                }
+                System.out.print("\t");
+            }
+            System.out.println();
+        }
+    }
+
     //////////////////////////////Functionality connecting with files//////////////////////////////////////////////////////
     public static String getImageName(Image img) {
         String fname = img.getUrl(); //np.C:/.../zdjecie.jpg
