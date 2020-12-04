@@ -6,9 +6,45 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<?import com.jfoenix.controls.JFXButton?>
+<?import javafx.geometry.Insets?>
+<?import com.jfoenix.controls.JFXComboBox?>
+<?import javafx.scene.image.ImageView?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="sample.OtsuThreshold"
-            prefHeight="400.0" prefWidth="600.0">
+            prefHeight="400.0" prefWidth="600.0"
+            stylesheets="@myAppStyle.css">
+    <children>
+        <VBox prefHeight="460.0" prefWidth="940.0">
+            <children>
+                <HBox alignment="CENTER" prefHeight="421.0" prefWidth="940.0" spacing="10.0">
+                    <children>
+                        <ImageView fx:id="imageViewL" fitHeight="350.0" fitWidth="455.0" pickOnBounds="true" preserveRatio="true" />
+                        <ImageView fx:id="imageViewR" fitHeight="350.0" fitWidth="455.0" pickOnBounds="true" preserveRatio="true" />
+                    </children>
+                </HBox>
+                <HBox prefHeight="39.0" prefWidth="940.0">
+                    <children>
+                        <Label alignment="CENTER" prefHeight="40.0" prefWidth="470.0" text="Original Image" />
+                        <Label alignment="CENTER" prefHeight="40.0" prefWidth="470.0" text="Destination Image" />
+                    </children>
+                </HBox>
+                <HBox prefHeight="70.0" prefWidth="940.0">
+                    <children>
+                        <Label alignment="CENTER" prefHeight="46.0" prefWidth="193.0" text="Liczba poziomów szarości:" />
+                        <JFXComboBox fx:id="combo_box" prefHeight="46.0" prefWidth="104.0" promptText="2" />
+                        <Region prefHeight="46.0" prefWidth="585.0" />
+                        <JFXButton onAction="#saveDestinationImage" prefHeight="46.0" prefWidth="100.0" text="Save">
+                            <!--<JFXButton onAction="#saveDestinationImage" prefHeight="46.0" prefWidth="100.0" text="Save">-->
+                            <HBox.margin>
+                                <Insets bottom="5.0" right="5.0" top="5.0" />
+                            </HBox.margin></JFXButton>
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </children>
+
 
 </AnchorPane>
