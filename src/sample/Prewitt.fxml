@@ -2,6 +2,9 @@
 
 <?import com.jfoenix.controls.JFXButton?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToggleGroup?>
@@ -11,28 +14,27 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<?import javafx.scene.control.ToggleButton?>
 <AnchorPane prefHeight="400.0" prefWidth="1100.0" stylesheets="@myAppStyle.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Prewitt">
     <children>
-    <VBox prefHeight="660.0" prefWidth="1100.0">
+    <VBox prefHeight="660.0" prefWidth="1150.0">
     <children>
-    <HBox alignment="CENTER" prefHeight="500.0" prefWidth="1100.0" spacing="10.0">
+    <HBox alignment="CENTER" prefHeight="500.0" prefWidth="1150.0" spacing="10.0">
         <children>
             <ImageView fx:id="imageViewL" fitHeight="500.0" fitWidth="400.0" pickOnBounds="true" preserveRatio="true" />
-                  <AnchorPane prefHeight="200.0" prefWidth="300.0">
+                  <AnchorPane prefHeight="250.0" prefWidth="300.0">
                      <children>
-                        <ToggleButton fx:id="togBtnW" layoutY="223.0" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0">
+                        <ToggleButton fx:id="togBtnW" layoutY="223.0" maxHeight="80.0" maxWidth="80.0" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0">
                            <toggleGroup>
                               <ToggleGroup fx:id="group" />
                            </toggleGroup>
                         </ToggleButton>
-                        <ToggleButton fx:id="togBtnSW" layoutY="313.0" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0" toggleGroup="$group" />
-                        <ToggleButton fx:id="togBtnNW" layoutY="133.0" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0" toggleGroup="$group" />
-                        <ToggleButton fx:id="togBtnS" layoutX="90.0" layoutY="313.0" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0" toggleGroup="$group" />
-                        <ToggleButton fx:id="togBtnN" layoutX="90.0" layoutY="133.0" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0" toggleGroup="$group" />
-                        <ToggleButton fx:id="togBtnNE" layoutX="180.0" layoutY="133.0" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0" toggleGroup="$group" />
-                        <ToggleButton fx:id="togBtnSE" layoutX="180.0" layoutY="313.0" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0" toggleGroup="$group" />
-                        <ToggleButton fx:id="togBtnE" layoutX="180.0" layoutY="223.0" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0" toggleGroup="$group" />
+                        <ToggleButton fx:id="togBtnSW" layoutY="329.0" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0" toggleGroup="$group" />
+                        <ToggleButton fx:id="togBtnNW" layoutY="117.0" maxHeight="80.0" maxWidth="80.0" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0" toggleGroup="$group" />
+                        <ToggleButton fx:id="togBtnS" layoutX="110.0" layoutY="329.0" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0" toggleGroup="$group" />
+                        <ToggleButton fx:id="togBtnN" layoutX="110.0" layoutY="117.0" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0" toggleGroup="$group" />
+                        <ToggleButton fx:id="togBtnNE" layoutX="220.0" layoutY="117.0" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0" toggleGroup="$group" />
+                        <ToggleButton fx:id="togBtnSE" layoutX="220.0" layoutY="329.0" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0" toggleGroup="$group" />
+                        <ToggleButton fx:id="togBtnE" layoutX="220.0" layoutY="223.0" mnemonicParsing="false" prefHeight="80.0" prefWidth="80.0" toggleGroup="$group" />
                      </children>
                   </AnchorPane>
             <ImageView fx:id="imageViewR" fitHeight="500.0" fitWidth="400.0" pickOnBounds="true" preserveRatio="true" />

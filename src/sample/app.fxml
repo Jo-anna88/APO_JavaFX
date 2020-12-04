@@ -56,6 +56,11 @@
                             <MenuItem mnemonicParsing="false" onAction="#showSharpenPanel" text="Sharpening" />
                             <MenuItem mnemonicParsing="false" onAction="#showEdgeDetectionPanel1" text="Edge Detection - Prewitt" />
                             <MenuItem mnemonicParsing="false" onAction="#showEdgeDetectionPanel2" text="Edge Detection - Sobel/Canny" />
+                            <SeparatorMenuItem mnemonicParsing="false" />
+                            <MenuItem mnemonicParsing="false" onAction="#showLogicOpPanel" text="Logic Operations" />
+                            <SeparatorMenuItem mnemonicParsing="false" />
+                            <MenuItem mnemonicParsing="false" onAction="#showAdaptiveThresholdPanel" text="Adaptive Thresholding" />
+                            <MenuItem mnemonicParsing="false" onAction="#showOtsuThresholdPanel" text="Otsu Thresholding" />
                         </items>
                     </Menu>
                     <Menu mnemonicParsing="false" text="Help">

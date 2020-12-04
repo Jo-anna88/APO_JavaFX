@@ -30,6 +30,8 @@ import static org.opencv.core.Core.BORDER_CONSTANT;
 import static org.opencv.core.Core.BORDER_DEFAULT;
 import static org.opencv.core.Core.BORDER_REPLICATE;
 import static org.opencv.imgcodecs.Imgcodecs.imread;
+import static org.opencv.imgproc.Imgproc.COLOR_BGR2GRAY;
+import static org.opencv.imgproc.Imgproc.cvtColor;
 
 public class Functionality {
     //////////////////////////////Functionality connecting with images//////////////////////////////////////////////////////
@@ -675,7 +677,93 @@ public class Functionality {
         return borderType;
     }
 
-    public static Image prewitt(Mat src, int matrixNr, int choice, int value) {
+    public static Image sobel(Mat src, int derivatives, int choice) {
+        //paramtery
+        int scale = 1;
+        int delta = 0;
+        int ddepth = CvType.CV_16S;
+        //convert colors to grayscale
+        Mat gray = new Mat(src.rows(), src.cols(), src.type());
+        cvtColor(src,gray,COLOR_BGR2GRAY);
+        //remove noise by gaussianblur
+        if (choice==3) choice=4; //bo usunięto constant
+        int borderType = returnBorderType(choice);
+        //wygładzanie z rozróźnieniem borderType:
+        //if (borderType==10 || borderType==BORDER_CONSTANT) borderType=BORDER_DEFAULT; //dla wygładzania nie rozróżniam opcji spoza zdef.w OpenCV listy
+        //Imgproc.GaussianBlur(gray,gray,new Size(3,3),0,0,borderType);
+        //wygładzanie dla domyślnych wartości:
+        Mat grayGB = new Mat (src.rows(), src.cols(),gray.type());
+        Imgproc.GaussianBlur(gray,grayGB,new Size(3,3),0);
+        //gradienty
+        Mat grad_x = new Mat(), grad_y = new Mat(), grad_xy = new Mat();
+        Mat abs_grad_x = new Mat(), abs_grad_y = new Mat(), abs_grad_xy = new Mat();
+        if (borderType==10) {//leave original value
+            Imgproc.Sobel(grayGB, grad_x, ddepth, 1, 0, 3, scale, delta, BORDER_DEFAULT);
+            Imgproc.Sobel(grayGB, grad_y, ddepth, 0, 1, 3, scale, delta, BORDER_DEFAULT);
+            // converting back to CV_8U
+            Core.convertScaleAbs( grad_x, abs_grad_x ); //liczymy wartość przybliżoną
+            Core.convertScaleAbs( grad_y, abs_grad_y ); //liczymy wartość przybliżoną
+        }
+         else {
+            Imgproc.Sobel(grayGB, grad_x, ddepth, 1, 0, 3, scale, delta, borderType);
+            Imgproc.Sobel(grayGB, grad_y, ddepth, 0, 1, 3, scale, delta, borderType);
+            // converting back to CV_8U
+            Core.convertScaleAbs( grad_x, abs_grad_x ); //liczymy wartość przybliżoną
+            Core.convertScaleAbs( grad_y, abs_grad_y ); //liczymy wartość przybliżoną
+        }
+
+        Mat dst = new Mat();
+        java.awt.Image img;
+        //ustawienie obrazu wynikowego
+        if (derivatives==0) {//tryb domyślny
+            Core.addWeighted( abs_grad_x, 0.5, abs_grad_y, 0.5, 0, dst );
+            if (borderType==10) putOriginalValue(gray, dst,3);
+            img = HighGui.toBufferedImage(dst);
+        } else if (derivatives==1) {//dx:1, dy:0
+            if (borderType==10) putOriginalValue(gray, abs_grad_x,3);
+            img = HighGui.toBufferedImage(abs_grad_x);
+        } else { //dx:0, dy:1
+            if (borderType==10) putOriginalValue(gray, abs_grad_y,3);
+            img = HighGui.toBufferedImage(abs_grad_y);
+        }
+        //konwersja z Mat do Image
+        WritableImage writableImage = SwingFXUtils.toFXImage((BufferedImage)img, null);
+        return writableImage;
+    }
+
+    public static Image canny(Mat src, int threshold, int ratio, int choice) {
+        Mat gray = new Mat(src.rows(), src.cols(), src.type());
+        //Mat grayBlur = new Mat(src.rows(), src.cols(), src.type());
+        Mat edges = new Mat(src.rows(), src.cols(), src.type());
+        Mat dst = new Mat(src.rows(), src.cols(), src.type(), new Scalar(0));
+        //konwersja na obraz szaroodcieniowy
+        cvtColor(src,gray,COLOR_BGR2GRAY);
+
+        //detecting the edges
+        if (choice==3) choice=4; //bo usunięto constant
+        int borderType = returnBorderType(choice);
+        if (borderType==10) {//leave original value
+            //blur
+            Imgproc.blur(gray, edges, new Size(3, 3));
+            //detecting the edges
+            Imgproc.Canny(edges, edges, threshold,threshold*ratio,3,false);
+            src.copyTo(dst,edges); //wstawiamy krawędzie do obrazu wyjściowego
+            putOriginalValue(src,dst,3); //dla skrajnych pikseli - ustawiamy wartość z obrazu źródł.szaroodc.
+        } else {
+            //blur
+            Imgproc.blur(gray, edges, new Size(3, 3), new Point(-1,-1),borderType);
+            //detecting the edges
+            Imgproc.Canny(edges,edges,threshold,threshold*ratio,3,false);
+            src.copyTo(dst,edges);
+        }
+
+        java.awt.Image img = HighGui.toBufferedImage(dst);
+        WritableImage writableImage = SwingFXUtils.toFXImage((BufferedImage)img, null);
+        return writableImage;
+    }
+
+    public static Image prewitt(Mat src, int matrixNr, int choice) {
+        if (choice==3) choice=4; //bo usunięto constant
         int borderType = returnBorderType(choice);
         Point anchor = new Point(-1, -1);
 
@@ -722,10 +810,6 @@ public class Functionality {
         Mat dst = new Mat(src.rows(), src.cols(), src.type());
         if (borderType==10) {//leave original values
             Imgproc.filter2D(src,dst,-1,kernel); //filtrowanie z domyślnym type_border
-            //putOriginalValue(src,dst,3);
-        }
-        else if (borderType==BORDER_CONSTANT) {
-            dst=filter2dConstant(src,3,value,kernel);
         }
         else {Imgproc.filter2D(src,dst,-1,kernel,anchor,0,borderType);}
         //3.normalizacja: min, max --> 0-255
@@ -733,8 +817,7 @@ public class Functionality {
         //4.konwersja "powrotna" i dokończenie opcji "leave orig.val."
         src.convertTo(src,srcType);
         dst.convertTo(dst,srcType);
-        if (borderType==10) {putOriginalValue(src,dst,3);
-        printMat(dst);}
+        if (borderType==10) {putOriginalValue(src,dst,3);}
         //5.przygotowanie obrazu wyjściowego
         java.awt.Image img = HighGui.toBufferedImage(dst);
         WritableImage writableImage = SwingFXUtils.toFXImage((BufferedImage)img, null);
@@ -809,6 +892,26 @@ public class Functionality {
             }
             System.out.println();
         }
+    }
+    //////////////////////////////////Logic Op.//////////////////////////////////////////////////////////////////
+    public static Image logicOp (Mat src1, Mat src2, int selection) {
+        System.out.println("src1.type: "+src1.type()+" src2.type: "+src2.type());
+        Mat dst= new Mat();
+        switch (selection) {
+            case 0: //AND
+                Core.bitwise_and(src1,src2,dst);
+                break;
+            case 1: //OR
+                Core.bitwise_or(src1,src2,dst);
+                break;
+            case 2: //XOR
+                Core.bitwise_xor(src1,src2,dst);
+                break;
+            default:
+        }
+        java.awt.Image img = HighGui.toBufferedImage(dst);
+        WritableImage writableImage = SwingFXUtils.toFXImage((BufferedImage)img, null);
+        return writableImage;
     }
 
     //////////////////////////////Functionality connecting with files//////////////////////////////////////////////////////

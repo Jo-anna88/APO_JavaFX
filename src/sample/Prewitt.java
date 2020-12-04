@@ -68,11 +68,6 @@ public class Prewitt {
     private ChoiceBox choiceBox; //to get border type
     private int choice;
 
-    @FXML
-    private Spinner valSpinner; //to get constant value
-    @FXML
-    private Label valLabel;
-    private int value;
 
     @FXML
     public void initialize() {
@@ -89,6 +84,35 @@ public class Prewitt {
         //destinationImage = Functionality.laplasjan(src, matrixNr, choice, value);
         //imageViewR.setImage(destinationImage);
         /////////ustawienie ikon do toggle buttons/////////
+        setIcons();
+        ////////////////////////////////////////////////////
+        group.selectedToggleProperty().addListener(
+                (observable, old_val, new_val) -> {
+                    matrixNr = (int) new_val.getUserData(); //uwaga! nr-y to 1,2,3,... (numeruje od 1!)
+                    destinationImage = Functionality.prewitt(src,matrixNr,choice);
+                    imageViewR.setImage(destinationImage);
+                });
+        //to get border type:
+        choiceBox.setItems(FXCollections.observableArrayList("default", "reflect", "replicate", "leave original values"));
+        choiceBox.setValue("default"); //domyślne dla blur, filter2D i gaussianBlur (BORDER_REFLECT_101)
+        choiceBox.getSelectionModel().selectedIndexProperty().addListener(
+                (observable, oldVal, newVal) -> { //uwaga! numeracja od 0!
+                    choice=newVal.intValue();
+                    destinationImage = Functionality.prewitt(src,matrixNr,choice);
+                    imageViewR.setImage(destinationImage);
+                });
+    }
+
+    public Prewitt() throws MalformedURLException {
+    }
+
+    @FXML
+    void saveDestinationImage(ActionEvent event) {
+        Functionality.save(originalImage,destinationImage);
+    }
+
+    void setIcons() {
+
         imageMatrix1 = new ImageView(new Image(prewN));
         imageMatrix2 = new ImageView(new Image(prewNE));
         imageMatrix3 = new ImageView(new Image(prewE));
@@ -97,6 +121,15 @@ public class Prewitt {
         imageMatrix6 = new ImageView(new Image(prewSW));
         imageMatrix7 = new ImageView(new Image(prewW));
         imageMatrix8 = new ImageView(new Image(prewNW));
+
+        imageMatrix1.fitWidthProperty().setValue(80);
+        imageMatrix2.fitWidthProperty().setValue(80);
+        imageMatrix3.fitWidthProperty().setValue(80);
+        imageMatrix4.fitWidthProperty().setValue(80);
+        imageMatrix5.fitWidthProperty().setValue(80);
+        imageMatrix6.fitWidthProperty().setValue(80);
+        imageMatrix7.fitWidthProperty().setValue(80);
+        imageMatrix8.fitWidthProperty().setValue(80);
 
         togBtnN.setGraphic(imageMatrix1);
         togBtnN.setUserData(1);
@@ -114,43 +147,6 @@ public class Prewitt {
         togBtnW.setUserData(7);
         togBtnNW.setGraphic(imageMatrix8);
         togBtnNW.setUserData(8);
-        ////////////////////////////////////////////////////
-        group.selectedToggleProperty().addListener(
-                (observable, old_val, new_val) -> {
-                    matrixNr = (int) new_val.getUserData(); //uwaga! nr-y to 1,2,3,... (numeruje od 1!)
-                    destinationImage = Functionality.prewitt(src,matrixNr,choice,value);
-                    imageViewR.setImage(destinationImage);
-                });
-        //to get border type:
-        choiceBox.setItems(FXCollections.observableArrayList("default", "reflect", "replicate", "constant", "leave original values"));
-        choiceBox.setValue("default"); //domyślne dla blur, filter2D i gaussianBlur (BORDER_REFLECT_101)
-        choiceBox.getSelectionModel().selectedIndexProperty().addListener(
-                (observable, oldVal, newVal) -> { //uwaga! numeracja od 0!
-                    if (newVal.intValue()==3) {//constant
-                        valLabel.setVisible(true);
-                        valSpinner.setVisible(true);
-                    }
-                    else {
-                        valLabel.setVisible(false);
-                        valSpinner.setVisible(false);
-                    }
-                    choice=newVal.intValue();
-                    destinationImage = Functionality.prewitt(src,matrixNr,choice,value);
-                    imageViewR.setImage(destinationImage);
-                });
-        //to get constant value:
-        valSpinner.valueProperty().addListener((ChangeListener<Integer>) (obs, oldValue, newValue) -> {
-            value=newValue;
-            destinationImage = Functionality.prewitt(src,matrixNr,choice,value);
-            imageViewR.setImage(destinationImage);
-        });
-    }
 
-    public Prewitt() throws MalformedURLException {
-    }
-
-    @FXML
-    void saveDestinationImage(ActionEvent event) {
-        Functionality.save(originalImage,destinationImage);
     }
 }

@@ -50,10 +50,12 @@ public class Controller {
     private TabPane tabPane;
 
     static TabPane sTabPane;
+    static FileChooser sFileChooser;
 
     public Controller() {
         setExtFilters(fileChooser);
         configureFileChooser(fileChooser);
+        sFileChooser=fileChooser;
     }
 
     @FXML
@@ -541,6 +543,51 @@ public class Controller {
         nstage.show();
     }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+    @FXML
+    public void showLogicOpPanel(ActionEvent actionEvent) throws IOException{
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("LogicOp.fxml"));
+        Parent root = loader.load();
+        Stage nstage = new Stage();
+        nstage.setTitle("Logic operations");
+        nstage.setScene(new Scene(root));
+        nstage.initOwner(rootNode.getScene().getWindow());
+        nstage.show();
+    }
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+    @FXML
+    public void showAdaptiveThresholdPanel(ActionEvent actionEvent) throws IOException{
+        Image img = returnSelectedImage();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("adaptiveThreshold.fxml"));
+        Parent root = loader.load();
+        Stage nstage = new Stage();
+        try { //gdy mamy do czynienia z Image
+            nstage.setTitle("Adaptive Thresholding - " + Functionality.getImageName(img));
+        } catch (NullPointerException e) { //gdy mamy do czynienia z WritableImage
+            Tab selectedTab = sTabPane.getSelectionModel().getSelectedItem(); //pobiera wybraną zakładkę (tab)
+            nstage.setTitle("Adaptive Thresholding - " + selectedTab.getText());
+        }
+        nstage.setScene(new Scene(root));
+        nstage.initOwner(rootNode.getScene().getWindow());
+        nstage.show();
+    }
+
+    @FXML
+    public void showOtsuThresholdPanel(ActionEvent actionEvent) throws IOException{
+        Image img = returnSelectedImage();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("otsuThreshold.fxml"));
+        Parent root = loader.load();
+        Stage nstage = new Stage();
+        try { //gdy mamy do czynienia z Image
+            nstage.setTitle("Otsu Thresholding - " + Functionality.getImageName(img));
+        } catch (NullPointerException e) { //gdy mamy do czynienia z WritableImage
+            Tab selectedTab = sTabPane.getSelectionModel().getSelectedItem(); //pobiera wybraną zakładkę (tab)
+            nstage.setTitle("Otsu Thresholding - " + selectedTab.getText());
+        }
+        nstage.setScene(new Scene(root));
+        nstage.initOwner(rootNode.getScene().getWindow());
+        nstage.show();
+    }
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
     @FXML
     public void initialize() {
         sTabPane = tabPane;
