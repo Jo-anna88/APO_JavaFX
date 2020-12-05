@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" stylesheets="@myAppStyle.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.SegmTexture">
+    <children>
+        <VBox prefHeight="650.0" prefWidth="940.0">
+            <children>
+                <HBox alignment="CENTER" prefHeight="500.0" prefWidth="940.0" spacing="10.0">
+                    <children>
+                        <ImageView fx:id="imageViewL" fitHeight="500.0" fitWidth="455.0" pickOnBounds="true" preserveRatio="true" />
+                        <ImageView fx:id="imageViewR" fitHeight="500.0" fitWidth="455.0" pickOnBounds="true" preserveRatio="true" />
+                    </children>
+                    <padding>
+                        <Insets left="10.0" right="10.0" top="10.0" />
+                    </padding>
+                </HBox>
+                <HBox alignment="CENTER_LEFT" prefHeight="50.0" prefWidth="940.0" spacing="10.0">
+                    <children>
+                        <Label alignment="CENTER" prefHeight="50.0" prefWidth="455.0" text="Original Image" />
+                        <Label alignment="CENTER" prefHeight="50.0" prefWidth="455.0" text="Destination Image" />
+                    </children>
+                    <padding>
+                        <Insets left="10.0" right="10.0" />
+                    </padding>
+                </HBox>
+                <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="10.0">
+                    <children>
+                        <Label alignment="CENTER_RIGHT" text="Matrix size:" />
+                        <ChoiceBox fx:id="choiceBox3" prefHeight="25.0" prefWidth="55.0" />
+                        <Label alignment="CENTER_RIGHT" text="Std.Dev. Threshold:" />
+                        <Spinner fx:id="spinner" editable="true" layoutX="51.0" layoutY="10.0" prefHeight="25.0" prefWidth="60.0">
+                            <valueFactory>
+                                <SpinnerValueFactory.DoubleSpinnerValueFactory amountToStepBy="0.5" initialValue="40" max="100" min="0" />
+                            </valueFactory>
+                        </Spinner>
+                        <Region prefHeight="95.0" prefWidth="470.0" />
+                        <JFXButton fx:id="saveButton" onAction="#saveDestinationImage" prefHeight="46.0" prefWidth="100.0" text="Save">
+                            <HBox.margin>
+                                <Insets bottom="5.0" right="5.0" top="5.0" />
+                            </HBox.margin>
+                        </JFXButton>
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </children>
+
+</AnchorPane>

@@ -46,6 +46,7 @@ public class OtsuThreshold {
         Imgproc.GaussianBlur(src,blur,new Size(5,5),0);
         Mat dst = new Mat(src.rows(), src.cols(), src.type());
         Imgproc.threshold(blur,dst,0,255,Imgproc.THRESH_BINARY+Imgproc.THRESH_OTSU);
+        //porównać wartości z obrazu źródłowego z obrazem wynikowym (sprawdzić dla jakiej wartości przeszło z 0 na 1 <- threshold)
         java.awt.Image destImg = HighGui.toBufferedImage(dst);
         destinationImage = SwingFXUtils.toFXImage((BufferedImage) destImg, null); //writable image
         imageViewR.setImage(destinationImage);

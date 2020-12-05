@@ -61,6 +61,8 @@
                             <SeparatorMenuItem mnemonicParsing="false" />
                             <MenuItem mnemonicParsing="false" onAction="#showAdaptiveThresholdPanel" text="Adaptive Thresholding" />
                             <MenuItem mnemonicParsing="false" onAction="#showOtsuThresholdPanel" text="Otsu Thresholding" />
+                            <SeparatorMenuItem mnemonicParsing="false" />
+                            <MenuItem mnemonicParsing="false" onAction="#showTexturePanel" text="Segmentation on Texture" />
                         </items>
                     </Menu>
                     <Menu mnemonicParsing="false" text="Help">

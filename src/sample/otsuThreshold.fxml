@@ -1,20 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-
 <?import com.jfoenix.controls.JFXButton?>
 <?import javafx.geometry.Insets?>
-<?import com.jfoenix.controls.JFXComboBox?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.image.ImageView?>
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="sample.OtsuThreshold"
-            prefHeight="400.0" prefWidth="600.0"
-            stylesheets="@myAppStyle.css">
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" stylesheets="@myAppStyle.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.OtsuThreshold">
     <children>
         <VBox prefHeight="460.0" prefWidth="940.0">
             <children>
@@ -32,9 +27,7 @@
                 </HBox>
                 <HBox prefHeight="70.0" prefWidth="940.0">
                     <children>
-                        <Label alignment="CENTER" prefHeight="46.0" prefWidth="193.0" text="Liczba poziomów szarości:" />
-                        <JFXComboBox fx:id="combo_box" prefHeight="46.0" prefWidth="104.0" promptText="2" />
-                        <Region prefHeight="46.0" prefWidth="585.0" />
+                        <Region prefHeight="46.0" prefWidth="825.0" />
                         <JFXButton onAction="#saveDestinationImage" prefHeight="46.0" prefWidth="100.0" text="Save">
                             <!--<JFXButton onAction="#saveDestinationImage" prefHeight="46.0" prefWidth="100.0" text="Save">-->
                             <HBox.margin>

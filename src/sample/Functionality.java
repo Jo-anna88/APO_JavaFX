@@ -2,6 +2,7 @@ package sample;
 
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Tab;
 import javafx.scene.image.*;
 import javafx.scene.paint.Color;
@@ -30,8 +31,7 @@ import static org.opencv.core.Core.BORDER_CONSTANT;
 import static org.opencv.core.Core.BORDER_DEFAULT;
 import static org.opencv.core.Core.BORDER_REPLICATE;
 import static org.opencv.imgcodecs.Imgcodecs.imread;
-import static org.opencv.imgproc.Imgproc.COLOR_BGR2GRAY;
-import static org.opencv.imgproc.Imgproc.cvtColor;
+import static org.opencv.imgproc.Imgproc.*;
 
 public class Functionality {
     //////////////////////////////Functionality connecting with images//////////////////////////////////////////////////////
@@ -895,7 +895,21 @@ public class Functionality {
     }
     //////////////////////////////////Logic Op.//////////////////////////////////////////////////////////////////
     public static Image logicOp (Mat src1, Mat src2, int selection) {
-        System.out.println("src1.type: "+src1.type()+" src2.type: "+src2.type());
+        if (src1.type()!=src2.type()) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Invalid types");
+            String s = "Types should be the same." + "\nLoad image with the same type.";
+            alert.setContentText(s);
+            alert.showAndWait();
+        }
+        if (src1.cols()!=src2.cols() || (src2.rows()!=src2.rows())) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Invalid size");
+            String s = "Image size should be the same." + "\nLoad image with the same size.";
+            alert.setContentText(s);
+            alert.showAndWait();
+        }
+
         Mat dst= new Mat();
         switch (selection) {
             case 0: //AND
@@ -913,7 +927,47 @@ public class Functionality {
         WritableImage writableImage = SwingFXUtils.toFXImage((BufferedImage)img, null);
         return writableImage;
     }
+    //////////////////////////////////////////////////////////////////////////////////////////////////////
+    public static Image adaptiveThresh(Mat src, int adaptiveMethod, int thresholdType, int blockSize, double C) {
+        Mat dst = new Mat(src.rows(), src.cols(), src.type());
+        //adaptive Method: ADAPTIVE_THRESH_MEAN_C =0; ADAPTIVE_THRESH_GAUSSIAN_C =1
+        //threshold Type: THRESH_BINARY =0; THRESH_BINARY_INV =1
+        Imgproc.adaptiveThreshold(src,dst,255,adaptiveMethod,thresholdType,blockSize,C);
+        java.awt.Image img = HighGui.toBufferedImage(dst);
+        WritableImage writableImage = SwingFXUtils.toFXImage((BufferedImage)img, null);
+        return writableImage;
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    public static Mat stdDev (Mat mat, int srcRows, int srcCols, int ksize, double thresh) {
+        Mat dst=new Mat(srcRows,srcCols,mat.type(),new Scalar(0));
+        Mat submat;
+        for(int i=0; i<srcRows; i++) {
+            for(int j=0; j<srcCols; j++) {
+                submat=mat.submat(new Rect(j,i,ksize,ksize));
+                MatOfDouble sigma = new MatOfDouble();
+                MatOfDouble me = new MatOfDouble();
+                Core.meanStdDev(submat, me, sigma);
+                double stdDev = sigma.get(0,0)[0];
+                if (stdDev<thresh) dst.put(i,j,0);
+                else dst.put(i,j,255);
+            }
+        }
+        return dst;
+    }
+    public static Image segmTexture(Mat src, int ksize, int borderType, double thresh) {
+        int border = ksize/2;
+        Mat gray = new Mat(src.rows(),src.cols(),src.type());
+        cvtColor(src,gray,COLOR_BGR2GRAY);
 
+        Mat bufImage = new Mat(src.rows()+border*2, src.cols()+border*2, src.type() ); //matryca dla obrazu źródłowego powiększonego o brzeg
+        Core.copyMakeBorder(gray, bufImage, border, border, border, border, borderType);
+
+        Mat dst = stdDev(bufImage,src.rows(),src.cols(),ksize,thresh);
+
+        java.awt.Image img = HighGui.toBufferedImage(dst);
+        WritableImage writableImage = SwingFXUtils.toFXImage((BufferedImage)img,null);
+        return writableImage;
+    }
     //////////////////////////////Functionality connecting with files//////////////////////////////////////////////////////
     public static String getImageName(Image img) {
         String fname = img.getUrl(); //np.C:/.../zdjecie.jpg
@@ -997,7 +1051,7 @@ public class Functionality {
             if ((currentDir != null) && (currentDir.exists())) {
                 fileChooser.setInitialDirectory(currentDir); //ustawia initial directory jako ten, w którym zapisany jest f
             }
-        } catch (MalformedURLException | URISyntaxException e) { //dla WritableImage
+        } catch (MalformedURLException | URISyntaxException | NullPointerException e) { //dla WritableImage
             fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
             ext2 = "png";
         }

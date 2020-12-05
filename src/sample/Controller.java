@@ -589,6 +589,23 @@ public class Controller {
     }
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     @FXML
+    public void showTexturePanel(ActionEvent actionEvent) throws IOException{
+        Image img = returnSelectedImage();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("segmTexture.fxml"));
+        Parent root = loader.load();
+        Stage nstage = new Stage();
+        try { //gdy mamy do czynienia z Image
+            nstage.setTitle("Segmentation - Texture - " + Functionality.getImageName(img));
+        } catch (NullPointerException e) { //gdy mamy do czynienia z WritableImage
+            Tab selectedTab = sTabPane.getSelectionModel().getSelectedItem(); //pobiera wybraną zakładkę (tab)
+            nstage.setTitle("Segmentation - Texture - " + selectedTab.getText());
+        }
+        nstage.setScene(new Scene(root));
+        nstage.initOwner(rootNode.getScene().getWindow());
+        nstage.show();
+    }
+
+    @FXML
     public void initialize() {
         sTabPane = tabPane;
 

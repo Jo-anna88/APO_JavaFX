@@ -85,7 +85,7 @@ public class LogicOp {
 
     @FXML
     void saveDestinationImage(ActionEvent event) {
-        //Functionality.save(originalImage,destinationImage);
+        Functionality.save(null,dst);
     }
     Mat loadImage() {
         FileChooser fileChooser = Controller.sFileChooser;
