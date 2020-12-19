@@ -3,6 +3,7 @@ package sample;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
@@ -26,6 +27,8 @@ public class OtsuThreshold {
     private ImageView imageViewL;
     @FXML
     private ImageView imageViewR;
+    @FXML
+    private Label threshold;
 
 
     @FXML
@@ -45,7 +48,8 @@ public class OtsuThreshold {
         Mat blur= new Mat(src.rows(), src.cols(), src.type());
         Imgproc.GaussianBlur(src,blur,new Size(5,5),0);
         Mat dst = new Mat(src.rows(), src.cols(), src.type());
-        Imgproc.threshold(blur,dst,0,255,Imgproc.THRESH_BINARY+Imgproc.THRESH_OTSU);
+        double d=Imgproc.threshold(blur,dst,0,255,Imgproc.THRESH_BINARY+Imgproc.THRESH_OTSU);
+        threshold.setText(Double.toString(d));
         //porównać wartości z obrazu źródłowego z obrazem wynikowym (sprawdzić dla jakiej wartości przeszło z 0 na 1 <- threshold)
         java.awt.Image destImg = HighGui.toBufferedImage(dst);
         destinationImage = SwingFXUtils.toFXImage((BufferedImage) destImg, null); //writable image

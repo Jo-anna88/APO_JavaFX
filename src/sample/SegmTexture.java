@@ -27,9 +27,6 @@ public class SegmTexture {
     private Image destinationImage;
     private Mat src;
     @FXML
-    private Spinner spinner; //to get threshold
-    private double thresh;
-    @FXML
     private ChoiceBox choiceBox3; //block size
     String[] ksizeChoice = {"3","5","7","9"};
     private int ksize;
@@ -52,15 +49,9 @@ public class SegmTexture {
         choiceBox3.getSelectionModel().selectedIndexProperty().addListener(
                 (observable, old_val, new_val) -> {
                     ksize = Integer.parseInt(ksizeChoice[new_val.intValue()]);
-                    destinationImage = Functionality.segmTexture(src,ksize,borderType,thresh);
+                    destinationImage = Functionality.segmTexture(src,ksize,borderType);
                     imageViewR.setImage(destinationImage);
                 });
-        //to get threshold:
-        spinner.valueProperty().addListener((ChangeListener<Double>) (obs, oldValue, newValue) -> {
-            thresh=newValue;
-            destinationImage = Functionality.segmTexture(src,ksize,borderType,thresh);
-            imageViewR.setImage(destinationImage);
-        });
     }
 
     @FXML

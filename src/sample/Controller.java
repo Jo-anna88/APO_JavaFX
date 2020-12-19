@@ -606,6 +606,22 @@ public class Controller {
     }
 
     @FXML
+    public void showWatershedPanel(ActionEvent actionEvent) throws IOException{
+        Image img = returnSelectedImage();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("segmWatershed.fxml"));
+        Parent root = loader.load();
+        Stage nstage = new Stage();
+        try { //gdy mamy do czynienia z Image
+            nstage.setTitle("Segmentation - Watershed - " + Functionality.getImageName(img));
+        } catch (NullPointerException e) { //gdy mamy do czynienia z WritableImage
+            Tab selectedTab = sTabPane.getSelectionModel().getSelectedItem(); //pobiera wybraną zakładkę (tab)
+            nstage.setTitle("Segmentation - Watershed - " + selectedTab.getText());
+        }
+        nstage.setScene(new Scene(root));
+        nstage.initOwner(rootNode.getScene().getWindow());
+        nstage.show();
+    }
+    @FXML
     public void initialize() {
         sTabPane = tabPane;
 

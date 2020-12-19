@@ -16,6 +16,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,9 +29,8 @@ import org.opencv.imgproc.Imgproc;
 
 import javax.imageio.ImageIO;
 
-import static org.opencv.core.Core.BORDER_CONSTANT;
-import static org.opencv.core.Core.BORDER_DEFAULT;
-import static org.opencv.core.Core.BORDER_REPLICATE;
+import static org.opencv.core.Core.*;
+import static org.opencv.core.CvType.*;
 import static org.opencv.imgcodecs.Imgcodecs.imread;
 import static org.opencv.imgproc.Imgproc.*;
 
@@ -619,7 +620,7 @@ public class Functionality {
             case 1: //uśrednianie K-pudełkowe
                 int sum = ksize*ksize + (K-1);
                 //zainicjowanie macierzy jedynkami (można użyć Mat m = Mat::ones(2, 2, CV_8UC3), ale to == Mat(2, 2, CV_8UC3, 1); // OpenCV replaces `1` with `Scalar(1,0,0)`)
-                Mat kernel_init=Mat.ones(kSize,CvType.CV_32F);
+                Mat kernel_init=Mat.ones(kSize,CV_32F);
                 //wstawienie wartości K
                 kernel_init.put(ksize/2,ksize/2, K);
 
@@ -681,7 +682,7 @@ public class Functionality {
         //paramtery
         int scale = 1;
         int delta = 0;
-        int ddepth = CvType.CV_16S;
+        int ddepth = CV_16S;
         //convert colors to grayscale
         Mat gray = new Mat(src.rows(), src.cols(), src.type());
         cvtColor(src,gray,COLOR_BGR2GRAY);
@@ -805,7 +806,7 @@ public class Functionality {
         //0.przechowanie typu obrazu źródłowego
         int srcType = src.type();
         //1.konwersja obrazu źródłowego do formatu uwzględniającego liczby z zakresu {-4080, 4080} <- możliwe min i max
-        src.convertTo(src,CvType.CV_16S); //nadal pozostajemy przy 3-4 kanałach (takiej ilości, jaka była)
+        src.convertTo(src,CV_16S); //nadal pozostajemy przy 3-4 kanałach (takiej ilości, jaka była)
         //2.utworzenie macierzy wyjściowej dla obrazu po filtracji
         Mat dst = new Mat(src.rows(), src.cols(), src.type());
         if (borderType==10) {//leave original values
@@ -842,7 +843,7 @@ public class Functionality {
         //0.przechowanie typu obrazu źródłowego
         int srcType = src.type();
         //1.konwersja obrazu źródłowego do formatu uwzględniającego liczby z zakresu {-4080, 4080} <- możliwe min i max
-        src.convertTo(src,CvType.CV_16S); //nadal pozostajemy przy 3-4 kanałach (takiej ilości, jaka była)
+        src.convertTo(src,CV_16S); //nadal pozostajemy przy 3-4 kanałach (takiej ilości, jaka była)
         //2.utworzenie macierzy wyjściowej dla obrazu po filtracji
         Mat dst = new Mat(src.rows(), src.cols(), src.type());
         if (borderType==10) {//leave original values
@@ -870,7 +871,7 @@ public class Functionality {
     }
 
     public static Mat createKernel (int[] data) {
-        Mat kernel = new Mat(3,3,CvType.CV_32F);
+        Mat kernel = new Mat(3,3,CV_32F);
         int k=0;
         for(int i=0; i<kernel.rows(); i++) {
             for (int j=0; j<kernel.cols(); j++) {
@@ -938,7 +939,7 @@ public class Functionality {
         return writableImage;
     }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public static Mat stdDev (Mat mat, int srcRows, int srcCols, int ksize, double thresh) {
+    public static Mat stdDev (Mat mat, int srcRows, int srcCols, int ksize) {
         Mat dst=new Mat(srcRows,srcCols,mat.type(),new Scalar(0));
         Mat submat;
         for(int i=0; i<srcRows; i++) {
@@ -948,13 +949,12 @@ public class Functionality {
                 MatOfDouble me = new MatOfDouble();
                 Core.meanStdDev(submat, me, sigma);
                 double stdDev = sigma.get(0,0)[0];
-                if (stdDev<thresh) dst.put(i,j,0);
-                else dst.put(i,j,255);
+                dst.put(i,j,stdDev);
             }
         }
         return dst;
     }
-    public static Image segmTexture(Mat src, int ksize, int borderType, double thresh) {
+    public static Image segmTexture(Mat src, int ksize, int borderType) {
         int border = ksize/2;
         Mat gray = new Mat(src.rows(),src.cols(),src.type());
         cvtColor(src,gray,COLOR_BGR2GRAY);
@@ -962,12 +962,318 @@ public class Functionality {
         Mat bufImage = new Mat(src.rows()+border*2, src.cols()+border*2, src.type() ); //matryca dla obrazu źródłowego powiększonego o brzeg
         Core.copyMakeBorder(gray, bufImage, border, border, border, border, borderType);
 
-        Mat dst = stdDev(bufImage,src.rows(),src.cols(),ksize,thresh);
+        Mat dst = stdDev(bufImage,src.rows(),src.cols(),ksize);
 
+        java.awt.Image img = HighGui.toBufferedImage(dst);
+        WritableImage writableImage = SwingFXUtils.toFXImage((BufferedImage)img,null);
+        Image dstImg = createImageAfterLinearHistogramStretching(writableImage);
+        //return writableImage;
+        return dstImg;
+    }
+
+    public static void fillWithZeros(Mat mat) {
+        for (int i = 0; i < mat.rows(); i++) {
+            for (int j = 0; j < mat.cols(); j++) {
+                mat.put(i,j,0);
+            }
+        }
+    }
+    public static Mat backgroundToWhite (Mat srcOriginal) {
+        Mat src = srcOriginal.clone();
+        byte[] srcData = new byte[(int) (src.total() * src.channels())];
+        src.get(0, 0, srcData);
+        for (int i = 0; i < src.rows(); i++) {
+            for (int j = 0; j < src.cols(); j++) {
+                if (srcData[(i * src.cols() + j) * 3] == (byte) 255 && srcData[(i * src.cols() + j) * 3 + 1] == (byte) 255
+                        && srcData[(i * src.cols() + j) * 3 + 2] == (byte) 255) {
+                    srcData[(i * src.cols() + j) * 3] = 0;
+                    srcData[(i * src.cols() + j) * 3 + 1] = 0;
+                    srcData[(i * src.cols() + j) * 3 + 2] = 0;
+                }
+            }
+        }
+        src.put(0, 0, srcData);
+        return src;
+    }
+
+    public static Image segmWatershed3 (Mat src0, double thr, int backgroundChoice) { //mean-shift filter, Otsu, distTransform
+        Mat temp = new Mat();
+        src0.copyTo(temp);
+        //0. MEAN-SHIFT FILTERING (zamiast innych metod wygładzania, typu blur czy Gaussian)
+        //the output of the function is the filtered “posterized” image with color gradients and fine-grain texture flattened
+        //That makes boundaries of color regions sharper.
+        //default: max-level (of the pyramid for the segmentation) =1
+        //sp=21 (spatial window radius), sr=51 (color window radius)
+        Imgproc.pyrMeanShiftFiltering(temp,temp,21,51);
+        //1. OTSU THRESHOLDING (change the background to black)
+        Imgproc.cvtColor(temp, temp, COLOR_BGR2GRAY); //temp convert to grayscale
+        Mat thresh = new Mat();
+        //jeśli tło jest jasne, muszę zrobić THRESH_BINARY_INV
+        if (backgroundChoice==0) //ciemne tło
+            Imgproc.threshold(temp,thresh, 0, 255,THRESH_BINARY | THRESH_OTSU);
+        else //jasne tło
+            Imgproc.threshold(temp,thresh, 0, 255,THRESH_BINARY_INV | THRESH_OTSU);
+        //2. DISTANCE TRANSFORM
+        // compute the exact Euclidean distance (DIST_L2) from every binary pixel to the nearest zero pixel (here: 3x3 mask),
+        // (then find peaks in this distance map and give them labels
+        // DIST_LABEL_CCOMP - each connected component of zeros in src (as well as all the non-zero pixels closest to the connected component) will be assigned the same label)
+        Mat EDT = new Mat();
+        Imgproc.distanceTransform(thresh,EDT,DIST_L2,3); //dla lepszej kalkulacji (ale wolniejszej), lepiej przyjąć maskSize=5
+        //Imgproc.distanceTransformWithLabels(thresh,EDT,labels,DIST_L2,3,DIST_LABEL_CCOMP); - dlaczego nie działa???
+        //3. FIND PEAKS
+        Core.MinMaxLocResult minmax = Core.minMaxLoc(EDT); //znajduje min i max dla danej macierzy (globalne)
+        double max = minmax.maxVal; //max jest w centrum największego obiektu (bo to centrum jest najbardziej oddalone od '0', czyli od tła
+        Mat foreground = new Mat();
+        Imgproc.threshold(EDT, foreground, thr*max,255,THRESH_BINARY); //why 0.5? - zakładamy, że obiekty są podobnej wielkości i centrum mniejszych obiektów będzie miało wartość min.50% max.wartości (centrum największego obiektu)
+        //4. defined 'unknown' areas (background or objects?)
+        Mat kernel=Mat.ones(new Size(3,3), CV_8U);
+        Mat background = new Mat();
+        Imgproc.morphologyEx(thresh,background,MORPH_DILATE,kernel,new Point(-1,-1),3);
+        foreground.convertTo(foreground,CV_8U);
+        Mat unknown = new Mat();
+        Core.subtract(background,foreground,unknown);
+        //5. GIVE LABELS TO THE PEAKS
+        Mat markers = new Mat(src0.rows(), src0.cols(),CV_32S);
+        Imgproc.connectedComponents(foreground,markers);
+        for(int i=0; i<src0.rows(); i++){
+            for(int j=0; j<src0.cols(); j++){
+                if(unknown.get(i,j)[0]==255)
+                    markers.put(i,j,0);
+                else
+                    markers.put(i,j,(markers.get(i,j)[0])+1);
+            }
+        }
+        //6. WATERSHED
+        Imgproc.watershed(src0,markers);
+        //7. MARKERS TO SHOW
+        Mat imgColor = new Mat(src0.rows(),src0.cols(),CV_8UC3);
+        markers.convertTo(markers,CV_8UC3);
+        applyColorMap(markers, imgColor, COLORMAP_MAGMA);
+
+        java.awt.Image img0 = HighGui.toBufferedImage(imgColor);
+        WritableImage writableImage = SwingFXUtils.toFXImage((BufferedImage)img0,null);
+        return createImageAfterLinearHistogramStretching(writableImage);
+    }
+
+
+    //nie działa prawidłowo!
+    public static Image segmWatershed2 (Mat src0) { //strong laplasjan & Otsu Thre. & Distance Transform & threshold & dilate & find/draw contours & draw circle
+        //Change the background from white to black
+        Mat src = backgroundToWhite(src0);
+        //sharpen our image in order to acute the edges of the foreground objects - laplasjan strong filter
+        int[] data = {1,1,1,1,-8,1,1,1,1};
+        Mat kernel = createKernel(data);
+        Mat laplasjan = new Mat();
+        Imgproc.filter2D(src,laplasjan,CV_32F,kernel);
+        /*
+        Mat sharp = new Mat();
+        src.convertTo(sharp, CV_32F);
+        Mat result = new Mat();
+        Core.subtract(sharp, laplasjan, result);
+        // convert back to 8bits gray scale
+        result.convertTo(result, CvType.CV_8UC3);
+        laplasjan.convertTo(laplasjan, CvType.CV_8UC3);
+        //Otsu threshold
+        Mat bw = new Mat();
+        Imgproc.cvtColor(result, bw, Imgproc.COLOR_BGR2GRAY);
+        //Imgproc.GaussianBlur(bw,bw,new Size(5,5),0);
+        Imgproc.threshold(bw, bw, 40, 255, Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU);
+        Mat dist = new Mat();
+        Imgproc.distanceTransform(bw, dist, Imgproc.DIST_L2, 3); //Euclidean distance
+        Imgproc.threshold(dist, dist, 0.4, 1.0, Imgproc.THRESH_BINARY);
+        Mat kernel1 = Mat.ones(3, 3, CvType.CV_8U);
+        Imgproc.dilate(dist, dist, kernel1);
+        Mat distDisplay2 = new Mat();
+        dist.convertTo(distDisplay2, CvType.CV_8U);
+        Core.multiply(distDisplay2, new Scalar(255), distDisplay2);
+        // Create the CV_8U version of the distance image
+        // It is needed for findContours()
+        Mat dist_8u = new Mat();
+        dist.convertTo(dist_8u, CvType.CV_8U);
+        // Find total markers
+        List<MatOfPoint> contours = new ArrayList<>();
+        Mat hierarchy = new Mat();
+        Imgproc.findContours(dist_8u, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+        // Create the marker image for the watershed algorithm
+        Mat markers = Mat.zeros(dist.size(), CvType.CV_32S);
+        // Draw the foreground markers
+        for (int i = 0; i < contours.size(); i++) {
+            Imgproc.drawContours(markers, contours, i, new Scalar(i + 1), -1);
+        }
+        // Draw the background marker
+        Mat markersScaled = new Mat();
+        markers.convertTo(markersScaled, CvType.CV_32F);
+        Core.normalize(markersScaled, markersScaled, 0.0, 255.0, Core.NORM_MINMAX);
+        Imgproc.circle(markersScaled, new Point(5, 5), 3, new Scalar(255, 255, 255), -1);
+        Mat markersDisplay = new Mat();
+        markersScaled.convertTo(markersDisplay, CvType.CV_8U);
+        Imgproc.circle(markers, new Point(5, 5), 3, new Scalar(255, 255, 255), -1);
+        // Perform the watershed algorithm
+        Imgproc.watershed(result, markers);
+        Mat mark = Mat.zeros(markers.size(), CvType.CV_8U);
+        markers.convertTo(mark, CvType.CV_8UC1);
+        Core.bitwise_not(mark, mark);
+        // imshow("Markers_v2", mark); // uncomment this if you want to see how the mark
+        // image looks like at that point
+        // Generate random colors
+        Random rng = new Random(12345);
+        List<Scalar> colors = new ArrayList<>(contours.size());
+        for (int i = 0; i < contours.size(); i++) {
+            int b = rng.nextInt(256);
+            int g = rng.nextInt(256);
+            int r = rng.nextInt(256);
+            colors.add(new Scalar(b, g, r));
+        }
+        // Create the result image
+        Mat dst = Mat.zeros(markers.size(), CvType.CV_8UC3);
+        byte[] dstData = new byte[(int) (dst.total() * dst.channels())];
+        dst.get(0, 0, dstData);
+        // Fill labeled objects with random colors
+        int[] markersData = new int[(int) (markers.total() * markers.channels())];
+        markers.get(0, 0, markersData);
+        for (int i = 0; i < markers.rows(); i++) {
+            for (int j = 0; j < markers.cols(); j++) {
+                int index = markersData[i * markers.cols() + j];
+                if (index > 0 && index <= contours.size()) {
+                    dstData[(i * dst.cols() + j) * 3 + 0] = (byte) colors.get(index - 1).val[0];
+                    dstData[(i * dst.cols() + j) * 3 + 1] = (byte) colors.get(index - 1).val[1];
+                    dstData[(i * dst.cols() + j) * 3 + 2] = (byte) colors.get(index - 1).val[2];
+                } else {
+                    dstData[(i * dst.cols() + j) * 3 + 0] = 0;
+                    dstData[(i * dst.cols() + j) * 3 + 1] = 0;
+                    dstData[(i * dst.cols() + j) * 3 + 2] = 0;
+                }
+            }
+        }
+        dst.put(0, 0, dstData);
+        */
+        java.awt.Image img0 = HighGui.toBufferedImage(src0);
+        WritableImage writableImage = SwingFXUtils.toFXImage((BufferedImage)img0,null);
+        return writableImage;
+    }
+
+    public static Image segmWatershed (Mat src, int threshold, int backgroundChoice) { //Canny thresholidng & find/draw contours
+        int rows = src.rows();
+        int cols = src.cols();
+        int type = 0; //-> '0' CV_8UC1
+        Mat gray = new Mat(src.rows(),src.cols(),src.type());
+        cvtColor(src,gray,COLOR_BGR2GRAY); //src type: CV_8UC3
+        //1.Otsu's/Canny's thresholding after Gaussian filtering (w efekcie otrzymujemy obraz binarny)
+        Mat blur = new Mat(rows, cols, type);
+        Imgproc.GaussianBlur(gray,blur,new Size(3,3),0);
+        //Mat thresh = new Mat(rows, cols, type);
+        //Imgproc.threshold(blur,thresh,0,255,Imgproc.THRESH_BINARY_INV+Imgproc.THRESH_OTSU); //-> '0' CV_8UC1
+        Mat cannyOutput = new Mat();
+        if (backgroundChoice==0) //ciemne tło
+            Core.bitwise_not(gray,gray);
+        Imgproc.Canny(gray, cannyOutput, threshold, threshold * 3,3,false);
+        //2. find contours
+        List<MatOfPoint> contours = new ArrayList<>();
+        Mat hierarchy = new Mat();
+        Imgproc.findContours(cannyOutput, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
+        //3. draw contours
+        Mat markers = Mat.zeros(cannyOutput.size(), CvType.CV_32S);
+        int compCount=0;
+        for (int i = 0; i < contours.size(); i++,compCount++) {
+            Scalar colorScalar = new Scalar(compCount+1,compCount+1,compCount+1);
+            Imgproc.drawContours(markers, contours, i, colorScalar, -1, 8, hierarchy, Integer.MAX_VALUE, new Point());
+        }
+        //4. watershed
+        watershed( src, markers );
+        //5. prepare image to show
+        Mat dst = new Mat(rows,cols, CV_8UC3);
+        src.copyTo(dst);
+        double[] red = {0,0,255};
+        for(int i=0; i<rows; i++) {
+            for(int j=0; j<cols; j++) {
+                if(markers.get(i,j)[0]==-1)
+                    dst.put(i,j, red);
+            }
+        }
+        java.awt.Image img0 = HighGui.toBufferedImage(dst);
+        WritableImage writableImage = SwingFXUtils.toFXImage((BufferedImage)img0,null);
+        return writableImage;
+    }
+
+    public static Image segmWatershed (Mat src, int backgroundChoice) { //Otsu thresholding & mathematical morphology op. & Distance Transform
+        int rows = src.rows();
+        int cols = src.cols();
+        int type = 0; //-> '0' CV_8UC1
+        Mat gray = new Mat(src.rows(),src.cols(),src.type());
+        cvtColor(src,gray,COLOR_BGR2GRAY); //src type: CV_8UC3
+        //1.Otsu's thresholding after Gaussian filtering (w efekcie otrzymujemy obraz binarny)
+        Mat blur = new Mat(rows, cols, type);
+        Imgproc.GaussianBlur(gray,blur,new Size(5,5),0);
+        Mat thresh = new Mat(rows, cols, type);
+        if (backgroundChoice==0) //dark background
+            Imgproc.threshold(blur, thresh,0,255,THRESH_BINARY+THRESH_OTSU);
+        else
+            Imgproc.threshold(blur,thresh,0,255,Imgproc.THRESH_BINARY_INV+Imgproc.THRESH_OTSU); //-> '0' CV_8UC1
+        //2.usunięcie szumu operacjami morfologii matematycznej
+        // - otwarcie (usunięcie zbędnych białych pikseli)
+        // - zamknięcie (usunięcie zbędnych czarnych pikseli)
+        /*# noise removal
+        kernel = np.ones((3,3),np.uint8)
+        opening = cv.morphologyEx(thresh,cv.MORPH_OPEN,kernel, iterations = 2)
+        /.../ dist_transform = cv.distanceTransform(opening,cv.DIST_L2,5)*/
+        //3. szukamy pikseli, które na pewno są tłem --> dyla(ta)cja (pewne tło -> '0')
+        Mat kernel=Mat.ones(new Size(3,3), CV_8U);
+        Mat background = new Mat(rows,cols,type);
+        Imgproc.morphologyEx(thresh,background,MORPH_DILATE,kernel,new Point(-1,-1),3); //orgy.: obraz źródłowy to: opening
+        //4. szukamy pikseli, które na pewno są obiektami --> erozja (NIE działa, bo obiekty się stykają, więc...)
+        //find the distance transform and apply a proper threshold - transformata odłegłościowa
+        //(wnętrza obiektów -> '255')
+        Mat distTransform = new Mat(src.rows(),src.cols(),type);
+        Mat foreground = new Mat(src.rows(),src.cols(),type);
+        Imgproc.distanceTransform(thresh,distTransform,DIST_L2,5); //distanceType: DIST_L2
+        Core.MinMaxLocResult minmax = Core.minMaxLoc(distTransform);
+        double max = minmax.maxVal;
+        Imgproc.threshold(distTransform, foreground, 0.7*max,255,0); //why 0.7?
+        //5. oznaczamy piksele, które jeszcze nie wiadomo, co reprezentują ('unknown' -> 255)
+        foreground.convertTo(foreground,CV_8U);
+        Mat unknown = new Mat(src.rows(),src.cols(),type);
+        Core.subtract(background,foreground,unknown);
+        //6. create marker (it is an array of same size as that of original image, but with int32 datatype)
+        // --> create labels for foreground objects
+        //wykorzystujemy metodę connectecComponents: 0 represents the background label, pozostałe: {1,(N-1)}
+        Mat markers = new Mat(src.rows(),src.cols(),CV_32S);
+        Imgproc.connectedComponents(foreground,markers); //default: connectivity = 8-way; output image label type = CV_32S;
+        //test:
+        //Mat imgColor = new Mat(src.rows(),src.cols(),CV_8UC3);
+        //marker.convertTo(marker,CV_8UC3);
+        //applyColorMap(marker, imgColor, COLORMAP_MAGMA);
+        //7. uwaga! w wahtershed '0' oznacza obszar nieznany (unknown), więc jeszcze trzeba wprowadzić modyfikację do markera
+        //nadać tłu nową wartość
+        //nadać obszarom 'unkown' (tym, które w matrycy 'unknown' mają wartość '255') wartość '0'
+        //markers.convertTo(markers,CV_8U);
+        for(int i=0; i<rows; i++){
+            for(int j=0; j<cols; j++){
+                if(unknown.get(i,j)[0]==255)
+                    markers.put(i,j,0);
+                else
+                    markers.put(i,j,(markers.get(i,j)[0])+1);
+            }
+        }
+        //8. użycie algorytmu whatershed
+        //src img -> Input 8-bit 3-channel image (u mnie jest 1-channel!)
+        //markers -> Input/output 32-bit single-channel image (with image regions - 'seed' - with postitive (>'0') values, and '0' value for unknown pixels)
+        //In the function output, each pixel in markers is set to a value of the "seed" components or to -1 at boundaries between the regions.
+        Imgproc.watershed(src,markers);
+        //9. przygotowanie obrazu wyjściowego
+        Mat dst = new Mat(rows,cols, CV_8UC3);
+        src.copyTo(dst);
+        double[] red = {255,0,0};
+        for(int i=0; i<rows; i++) {
+            for(int j=0; j<cols; j++) {
+                if(markers.get(i,j)[0]==-1)
+                    dst.put(i,j, red);
+            }
+        }
         java.awt.Image img = HighGui.toBufferedImage(dst);
         WritableImage writableImage = SwingFXUtils.toFXImage((BufferedImage)img,null);
         return writableImage;
     }
+
     //////////////////////////////Functionality connecting with files//////////////////////////////////////////////////////
     public static String getImageName(Image img) {
         String fname = img.getUrl(); //np.C:/.../zdjecie.jpg

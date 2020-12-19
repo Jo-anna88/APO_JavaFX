@@ -91,7 +91,7 @@ public class LogicOp {
         FileChooser fileChooser = Controller.sFileChooser;
         File file = fileChooser.showOpenDialog(node.getScene().getWindow());
         String filepath = file.getAbsolutePath();
-        Mat src = Imgcodecs.imread(filepath, Imgcodecs.IMREAD_COLOR);
+        Mat src = Imgcodecs.imread(filepath,Imgcodecs.IMREAD_COLOR);
         cvtColor(src,src,COLOR_BGR2GRAY);
         return src;
     }

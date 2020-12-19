@@ -1,0 +1,16 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="APO_JavaFX:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/APO_JavaFX_jar</output-path>
+    <root id="archive" name="APO_JavaFX.jar">
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/src/main/resources/META-INF/MANIFEST.MF" />
+      </element>
+      <element id="module-output" name="APO_JavaFX" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/controlsfx/controlsfx/11.0.3/controlsfx-11.0.3.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/jfoenix/jfoenix/9.0.10/jfoenix-9.0.10.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/drewnoakes/metadata-extractor/2.15.0/metadata-extractor-2.15.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/adobe/xmp/xmpcore/6.0.6/xmpcore-6.0.6.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="D:/programy/opencv/build/java/opencv-440.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
